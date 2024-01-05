@@ -1,46 +1,60 @@
+import { useEffect, useState } from "react"
+import { fields, sampleEntry } from "./Form"
+import { getHouseData } from "../firebase/database";
+
 type Cell = {
     text: string
 }
 
 function Table() {
+    const [data, setData] = useState([sampleEntry]);
+
+    const getDataFromDb = async () => {
+        let tempData = await getHouseData();
+        console.log(tempData);
+        setData(tempData);
+    }
+
+    // call function
+	useEffect(() => {
+		getDataFromDb();
+	}, [])
+
     const firstHeader: Cell[] = [
-        {text: "Address"},
-        {text: "Weekly Rent"},
-        {text: "PNR🚍"},
-        {text: "PNR🚴"},
-        {text: "PNR🚶"},
-        {text: "Star🚍"},
-        {text: "Star🚴"},
-        {text: "Star🚶"},
-        {text: "Parra🚍"},
-        {text: "Parra🚴"},
-        {text: "Groceries🚶"},
-        {text: "Food"},
-        {text: "Size"},
-        {text: "Convenience"},
-        {text: "Ensuite?"},
-        {text: "Furnished?"},
-        {text: "Sharehouse?"},
-        {text: "Electricity?"},
-        {text: "Water?"},
-        {text: "Internet?"},
-        {text: "Rented?"},
+        ...fields.map(field => {
+            return {text: field.label}
+        }),
         {text: "Score"}
     ]
 
-    const secondHeader: Cell[] = [
-        {text: "🚍"},
-        {text: "🚴"},
-        {text: "🚶"},
-    ]
     return (
         <div className="overflow-x-scroll w-full rounded scroll-smooth">
             <table className="table-auto rounded bordder-solid">
                 <tr>
                     {firstHeader.map(headerCell => {
-                        return <th className="bg-slate-200 text-indigo-500 px-10 py-3 border-solid border-1 border-white">{headerCell.text}</th>
+                        return <th className="bg-gray-200 dark:bg-black text-indigo-500 px-10 py-3 border-solid border-1 border-white">{headerCell.text}</th>
                     })}
                 </tr>
+                {data.map(entry => {
+                    return (<tr>
+                        {fields.map(field => {
+                            // @ts-ignore
+                            let cellData = entry[field.id];
+                            if (typeof cellData == "boolean") {
+                                if (cellData) {
+                                    cellData = "True"
+                                } else {
+                                    cellData = "False"
+                                }
+                            }
+
+                            if (cellData == "") {
+                                cellData = "-"
+                            }
+                            return (<td>{cellData}</td>)
+                        })}
+                    </tr>)
+                })}
             </table>
         </div>
     )
