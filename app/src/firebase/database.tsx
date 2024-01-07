@@ -1,13 +1,12 @@
 import {
-  collection,
-  getDoc, getDocFromServer, getDocs, query, where,
-  addDoc
+  collection, doc,
+  getDocs, addDoc, deleteDoc, getDoc, updateDoc
 } from "firebase/firestore";
 
 import { db } from "./config";
-import { Entry } from "../components/Form";
+import { Entry } from "../components/AddEntry";
 
-const submitHouseData = async (data: {}) => {
+const addEntry = async (data: {}) => {
   try {
     const docRef = await addDoc(collection(db, "data"), data);
     console.log("Document written with ID: ", docRef.id);
@@ -16,7 +15,7 @@ const submitHouseData = async (data: {}) => {
   }
 };
 
-const getHouseData = async () => {
+const getHouseEntries = async () => {
   let data: Entry[] = [];
   const querySnapshot = await getDocs(collection(db, "data"));
 
@@ -28,4 +27,24 @@ const getHouseData = async () => {
   return data;
 }
 
-export {submitHouseData, getHouseData}
+const getEntry = async (currentEntry: string) => {
+  const snapshot = await getDoc(doc(db, "data", currentEntry))
+  let tempData = {id: snapshot.id, ...snapshot.data()}
+  console.log(tempData)
+  return tempData
+}
+
+const deleteEntry = async (id: string) => {
+  await deleteDoc(doc(db, "data", id));
+} 
+
+const updateEntry = async (entryId: string, data: {}) => {
+  try {
+    await updateDoc(doc(db, "data", entryId), data);
+    console.log("Document updated with ID: ", entryId);
+  } catch (e) {
+    console.error("Error updating document: ", e);
+  }
+}
+
+export {addEntry, getHouseEntries, getEntry, deleteEntry, updateEntry}
