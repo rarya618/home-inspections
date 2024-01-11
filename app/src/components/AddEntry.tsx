@@ -10,7 +10,8 @@ type Field = {
   isHidden?: boolean
 }
 
-export const textboxStyle = "relative bg-gray-100 text-black px-4 py-2 rounded right-0"
+export const formStyle = "bg-white dark:bg-black text-black dark:text-white rounded-md px-8 py-7 mt-0 mb-10 shadow"
+export const textboxStyle = "relative text-sm bg-gray-100 text-black px-4 py-2 rounded right-0"
 export const checkboxStyle = "mx-0 my-3 w-4 h-4 rounded"
 export const labelStyle = "m-0 pr-5 py-2 w-32 text-left"
 
@@ -18,35 +19,40 @@ export const fields: Field[] = [
   {id: "address", label: "Address", placeholder: "Full address"},
   {id: "rent", label: "Rent", placeholder: "Weekly rent"},
   {id: "suburb", label: "Suburb", placeholder: "Suburb"},
+  {id: "isInspected", label: "Inspected?", dataType: "checkbox"},
   {id: "uniPT", label: "Uni🚍", placeholder: "in minutes"},
   {id: "uniWalk", label: "Uni🚶", placeholder: "in minutes"},
   {id: "workPT", label: "Work🚍", placeholder: "in minutes"},
   {id: "workWalk", label: "Work🚶", placeholder: "in minutes"},
   {id: "miscPT", label: "Misc🚍", placeholder: "in minutes"},
+  {id: "train", label: "🚍 station (min.)", placeholder: "in minutes"},
   {id: "coles", label: "Coles (min.)", placeholder: "in minutes"},
-  {id: "woolies", label: "Woolies (min.)", placeholder: "in minutes", isHidden: true},
-  {id: "aldi", label: "ALDI (min.)", placeholder: "in minutes", isHidden: true},
-  {id: "7eleven", label: "7-eleven (min.)", placeholder: "in minutes", isHidden: true},
+  {id: "woolies", label: "Woolies (min.)", placeholder: "in minutes"},
+  {id: "aldi", label: "ALDI (min.)", placeholder: "in minutes"},
+  {id: "7eleven", label: "7-eleven (min.)", placeholder: "in minutes"},
   {id: "gyg", label: "GYG (min.)", placeholder: "in minutes"},
-  {id: "broadway", label: "Broadway (min.)", placeholder: "in minutes", isHidden: true},
-  {id: "size", label: "Size offset", placeholder: "From -5 to 5", isHidden: true},
-  {id: "convenience", label: "Offset", placeholder: "Offset", isHidden: true},
-  {id: "isEnsuite", label: "Ensuite?", dataType: "checkbox", isHidden: true},
-  {id: "isFurnished", label: "Furnished?", dataType: "checkbox", isHidden: true},
-  {id: "isSharehouse", label: "Sharehouse?", dataType: "checkbox", isHidden: true},
-  {id: "hasElectricity", label: "Electricity?", dataType: "checkbox", isHidden: true},
-  {id: "hasWater", label: "Water?", dataType: "checkbox", isHidden: true},
-  {id: "hasInternet", label: "Internet?", dataType: "checkbox", isHidden: true},
+  {id: "broadway", label: "Broadway (min.)", placeholder: "in minutes"},
+  {id: "size", label: "Size offset", placeholder: "From -5 to 5"},
+  {id: "convenience", label: "Offset", placeholder: "Offset"},
+  {id: "isEnsuite", label: "Ensuite?", dataType: "checkbox"},
+  {id: "isKitchenPrivate", label: "Private kitchen?", dataType: "checkbox"},
+  {id: "isFurnished", label: "Furnished?", dataType: "checkbox"},
+  {id: "isSharehouse", label: "Sharehouse?", dataType: "checkbox"},
+  {id: "hasElectricity", label: "Electricity?", dataType: "checkbox"},
+  {id: "hasWater", label: "Water?", dataType: "checkbox"},
+  {id: "hasInternet", label: "Internet?", dataType: "checkbox"},
   {id: "isRented", label: "Rented?", dataType: "checkbox"}
 ]
 
 export type Entry = {
   id: string,
   address: string,
+  score: number,
   suburb?: string,
   "7eleven"?: string,
   aldi?: string, 
   broadway?: string,
+  train?: string,
   coles?: string,
   convenience?: string,
   gyg?: string,
@@ -54,9 +60,11 @@ export type Entry = {
   hasInternet?: boolean,
   hasWater?: boolean,
   isEnsuite?: boolean,
+  isKitchenPrivate?: boolean,
   isFurnished?: boolean,
   isRented?: boolean,
   isSharehouse?: boolean,
+  isInspected?: boolean,
   miscPT?: string,
   rent: string,
   size?: string,
@@ -68,7 +76,7 @@ export type Entry = {
 }
 
 // sample entry to create dataset
-export const sampleEntry: Entry = {id: "null", address: "sample", rent: "0"};
+export const sampleEntry: Entry = {id: "null", address: "sample", rent: "0", score: 0};
 
 type FormProps = {
   changeHandler: () => void
@@ -115,7 +123,7 @@ function AddEntryForm(props: FormProps) {
 
 
   return (
-    <form className="bg-white dark:bg-black text-black dark:text-white rounded-md px-8 py-7 shadow" onSubmit={formSubmit}>
+    <form className={formStyle} onSubmit={formSubmit}>
       <h2 className="mb-4 text-xl">New entry</h2>
       {fields.map(field => {
         return (

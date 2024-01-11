@@ -30,8 +30,8 @@ const closeButton = (toggle: () => void) => {
 export function Button(text: string, onclick?: () => void) {
   return (
     <button 
-        className="px-8 py-2 rounded-md fixed bottom-10 right-10 bg-indigo-500 text-white"
-        onClick={onclick}>{text}</button>
+      className="px-8 py-2 rounded-md fixed bottom-10 right-8 bg-indigo-500 text-white"
+      onClick={onclick}>{text}</button>
   )
 }
 
@@ -70,7 +70,7 @@ function App() {
       )
       : (<>
       <div className="mx-2 my-2.5">
-        <h3 className="text-left text-4xl mb-5">Dashboard</h3>
+        <h3 className="text-left text-3xl mb-5">Dashboard</h3>
         <Table 
           currentEntry={currentEntry}
           setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)} 

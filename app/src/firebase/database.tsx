@@ -5,6 +5,7 @@ import {
 
 import { db } from "./config";
 import { Entry } from "../components/AddEntry";
+import { calculateScore } from "../components/Score";
 
 const addEntry = async (data: {}) => {
   try {
@@ -20,8 +21,9 @@ const getHouseEntries = async () => {
   const querySnapshot = await getDocs(collection(db, "data"));
 
   querySnapshot.forEach((doc) => {
+    let tempEntry = {id: doc.id, ...doc.data()};
     // @ts-ignore
-    data = [...data, {id: doc.id, ...doc.data()}]
+    data = [...data, {...tempEntry, score: calculateScore(tempEntry)}]
   })
 
   return data;

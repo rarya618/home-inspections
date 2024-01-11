@@ -3,7 +3,7 @@ import { fields, sampleEntry } from "./AddEntry"
 import { getHouseEntries } from "../firebase/database";
 import { calculateScore } from "./Score";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
+import { faCopy, faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTitle } from "../App";
 
@@ -45,6 +45,7 @@ function Table(props: Props) {
 
 	const options = [
 		{id: "update", icon: faPenToSquare, text: "Update", onClick: showUpdateView},
+		{id: "duplicate", icon: faCopy, text: "Duplicate", onClick: showUpdateView},
 		{id: "delete", icon: faTrash, text: "Delete", onClick: showDeleteView},
 	]
 
@@ -66,58 +67,62 @@ function Table(props: Props) {
 						if (headerCell.isHidden) {
 							return
 						}
-						return <th className={"bg-gray-200 dark:bg-black text-indigo-500 px-10 py-3 " + (headerCell.id == "address" ? "w-96 " : "") + "border-solid border-1 border-white"}>{headerCell.text}</th>
+						return <th className="whitespace-nowrap bg-gray-200 dark:bg-black text-indigo-500 px-8 py-3 border-solid border-1 border-white">{headerCell.text}</th>
 					})}
 				</tr>
-				{[...data].sort((a, b) => parseInt(a.rent) - parseInt(b.rent)).map(entry => {
-						return (<tr>
-							{headerCells.map(headerCell => {
-								if (headerCell.isHidden) {
-									return
-								}
-								let cellData: string = "";
-								if (headerCell.id == "score") {
-									cellData = calculateScore(entry).toString();
-								} else if (headerCell.id == "options") {
-									return (
-										<td>
+				{[...data].sort((a, b) => b.score - a.score).map(entry => {
+						return (
+							<>
+							<tr className="relative">
+								{headerCells.map(headerCell => {
+									if (headerCell.isHidden)
+										return
+									
+									let cellData: string = "";
+									if (headerCell.id == "options") 
+										return (
+										<div className="inline-block whitespace-nowrap align-middle px-2 py-2">
 											{options.map(option => {
 												return (
-												<button 
-													className="bg-gray-100 rounded-md px-2 py-1 m-1"
-													onClick={
-														(option.id == "update") 
-														// @ts-ignore
-														? (event => option.onClick(event, entry.id))
-														: (() => option.onClick)
+													<button 
+														className="bg-gray-100 rounded-md px-2 py-1 m-1"
+														onClick={
+															(option.id == "update") 
+															// @ts-ignore
+															? (event => option.onClick(event, entry.id))
+															: (() => option.onClick)
+														}
+													>
+														<FontAwesomeIcon icon={option.icon} />
+													</button>)
+											})}
+										</div>
+										)
+									if (headerCell.id == "score") {
+										if (entry.score)
+											cellData = entry.score.toString();
+										else
+											cellData = calculateScore(entry).toString();
+									} else {
+										// @ts-ignore
+										cellData = entry[headerCell.id];
 
-													}
-												>
-													<FontAwesomeIcon icon={option.icon} />
-												</button>)
-											})
-											}
-										</td>
-									)
-								} else {
-									// @ts-ignore
-									cellData = entry[headerCell.id];
-									if (typeof cellData == "boolean") {
-										if (cellData) {
-											cellData = "Yes"
-										} else {
-											cellData = "No"
+										if (typeof cellData == "boolean") {
+											if (cellData) 
+												cellData = "Yes"
+											else 
+												cellData = "No"
 										}
+
+										if (cellData == "")
+											cellData = "-"
 									}
 
-									if (cellData == "") {
-										cellData = "-"
-									}
-								}
-
-								return (<td className="px-10 py-3">{cellData}</td>)
-							})}
-						</tr>)
+									return (<td className={"whitespace-nowrap px-8 py-4" + (headerCell.id == "score" ? " text-lg" : "") + (headerCell.id == "address" ? " text-left" : "")}>{cellData}</td>)
+								})}
+							</tr>
+							</>
+						)
 				})}
 			</table>
 		</div>

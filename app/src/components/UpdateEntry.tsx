@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { getEntry, updateEntry } from "../firebase/database";
-import { checkboxStyle, fields, labelStyle, textboxStyle } from "./AddEntry";
+import { checkboxStyle, fields, formStyle, labelStyle, textboxStyle } from "./AddEntry";
 import { Button, useTitle } from "../App";
 
 type FormProps = {
@@ -62,7 +62,7 @@ function UpdateEntryForm(props: FormProps) {
   useTitle("Update Entry")
 
   return (
-    <form className="bg-white dark:bg-black text-black dark:text-white rounded-md px-8 py-7 shadow" onSubmit={formSubmit}>
+    <form className={formStyle} onSubmit={formSubmit}>
       <h2 className="mb-4 text-xl">Update entry</h2>
       {fields.map(field => {
         return (
