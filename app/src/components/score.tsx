@@ -257,6 +257,82 @@ const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): n
   return modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
 }
 
+export type ScoreComponent = { label: string; value: number }
+
+// returns per-factor breakdown of the score
+const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
+  if (entry.isRented) return []
+
+  const components: ScoreComponent[] = []
+  const add = (label: string, value: number) => {
+    if (value !== 0) components.push({ label, value: Math.round(value) })
+  }
+
+  if (entry.address == "2019/185-211 Broadway") add("Address bonus", 200)
+
+  const beds = entry.bedrooms ? Math.max(1, parseInt(entry.bedrooms)) : 1
+  const rent = Math.round(parseInt(entry.rent) / beds)
+  add("Rent (per person)", getRentFactor(rent))
+
+  const uniPT    = entry.uniPT    ? parseInt(entry.uniPT)    : 0
+  const uniDrive = entry.uniDrive ? parseInt(entry.uniDrive) : 0
+  add("Uni commute", getCommuteScore(uniPT, 0, uniDrive))
+
+  const workPT    = entry.workPT    ? parseInt(entry.workPT)    : 0
+  const workDrive = entry.workDrive ? parseInt(entry.workDrive) : 0
+  add("Work commute", getCommuteScore(workPT, 0, workDrive))
+
+  const groceryTimes = [
+    entry.coles         ? parseInt(entry.coles)         : 0,
+    entry.woolies       ? parseInt(entry.woolies)       : 0,
+    entry.aldi          ? parseInt(entry.aldi)          : 0,
+    entry.shoppingCenter ? parseInt(entry.shoppingCenter) : 0,
+  ].filter(m => m > 0)
+  const bestGrocery = groceryTimes.length > 0 ? Math.min(...groceryTimes) : 0
+  add("Grocery proximity", getGroceryFactor(bestGrocery))
+
+  const trainPT    = entry.trainPT    ? parseInt(entry.trainPT)    : 0
+  const trainWalk  = entry.trainWalk  ? parseInt(entry.trainWalk)  : 0
+  const trainDrive = entry.trainDrive ? parseInt(entry.trainDrive) : 0
+  add("Train station", getTrainStationScore(trainPT, trainWalk, trainDrive))
+
+  add("Utilities", getUtilFactor(!!entry.hasElectricity, !!entry.hasWater, !!entry.hasInternet))
+  add("Ensuite", getEnsuiteFactor(!!entry.isEnsuite))
+  add("Private kitchen", getKitchenFactor(!!entry.isKitchenPrivate))
+  add("Furnished", getFurnishedFactor(!!entry.isFurnished))
+  add("Whole place", getSharehouseFactor(!!entry.isSharehouse))
+  add("Inspected", getInspectedFactor(!!entry.isInspected))
+  add("GYG proximity", getGygFactor(entry.gyg ? parseInt(entry.gyg) : 0))
+
+  if (beds > 1) {
+    let bedroomBonus = (beds - 1) * 150
+    if (beds === 4) bedroomBonus -= 150
+    else if (beds >= 5) bedroomBonus -= 300
+    add("Bedrooms", bedroomBonus)
+  }
+
+  if (entry.bathrooms) {
+    const baths = parseInt(entry.bathrooms)
+    const ratio = baths / beds
+    let bathScore = 0
+    if (ratio >= 1.0)       bathScore = 200
+    else if (ratio >= 0.67) bathScore = 100
+    else if (ratio >= 0.5)  bathScore = 0
+    else if (ratio >= 0.33) bathScore = -100
+    else                    bathScore = -200
+    add("Bathrooms", bathScore)
+  }
+
+  if (entry.carParks && parseInt(entry.carParks) >= 1) add("Car parks", 150)
+  if (entry.hasAirCon) add("Air con", 150)
+  if (entry.isPetsAllowed) add("Pets allowed", 100)
+  if (entry.hasGarage) add("Garage", 250)
+  if (entry.size)        add("Size",        parseInt(entry.size) * 100)
+  if (entry.convenience) add("Convenience", parseInt(entry.convenience) * 100)
+
+  return components
+}
+
 // returns the score of property
 const calculateScore = (entry: Entry) => {
     let score = 0
@@ -332,8 +408,10 @@ const calculateScore = (entry: Entry) => {
     let gygMinutes = entry.gyg ? parseInt(entry.gyg) : 0
     score += getGygFactor(gygMinutes)
 
-    // add bedrooms score (+150 per room above 1)
+    // add bedrooms score (+150 per room above 1, extra penalty from 4+)
     if (beds > 1) score += (beds - 1) * 150
+    if (beds === 4) score -= 150
+    else if (beds >= 5) score -= 300
 
     // add bathrooms score (based on ratio of bathrooms to people)
     if (entry.bathrooms) {
@@ -369,4 +447,4 @@ const calculateScore = (entry: Entry) => {
 }
 
 
-export {calculateScore}
+export { calculateScore, calculateScoreBreakdown }

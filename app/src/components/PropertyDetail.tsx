@@ -1,5 +1,5 @@
 import { Entry } from "./AddEntry";
-import { calculateScore } from "./Score";
+import { calculateScore, calculateScoreBreakdown } from "./Score";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -80,6 +80,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
   const score = entry.score ?? calculateScore(entry);
   const meta = getScoreMeta(score);
+  const breakdown = calculateScoreBreakdown(entry);
 
   useTitle(entry.address || "Property");
 
@@ -261,6 +262,28 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
           )}
 
         </div>
+
+        {/* Score breakdown */}
+        {breakdown.length > 0 && (
+          <div>
+            <SectionTitle>Score breakdown</SectionTitle>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+              {breakdown.map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between px-4 py-3">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
+                  <span className={`text-sm font-bold tabular-nums ${value > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
+                    {value > 0 ? "+" : ""}{value}
+                  </span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-b-xl">
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Total</span>
+                <span className="text-sm font-extrabold tabular-nums text-gray-900 dark:text-white">{score}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
