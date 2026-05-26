@@ -73,54 +73,56 @@ function Table(props: Props) {
 				{[...data].sort((a, b) => b.score - a.score).map(entry => {
 						return (
 							<>
-							<tr className="relative">
-								{headerCells.map(headerCell => {
-									if (headerCell.isHidden)
-										return
-									
-									let cellData: string = "";
-									if (headerCell.id == "options") 
-										return (
-										<div className="inline-block whitespace-nowrap align-middle px-2 py-2">
-											{options.map(option => {
-												return (
-													<button 
-														className="bg-gray-100 rounded-md px-2 py-1 m-1"
-														onClick={
-															(option.id == "update") 
-															// @ts-ignore
-															? (event => option.onClick(event, entry.id))
-															: (() => option.onClick)
-														}
-													>
-														<FontAwesomeIcon icon={option.icon} />
-													</button>)
-											})}
-										</div>
-										)
-									if (headerCell.id == "score") {
-										if (entry.score)
-											cellData = entry.score.toString();
-										else
-											cellData = calculateScore(entry).toString();
-									} else {
-										// @ts-ignore
-										cellData = entry[headerCell.id];
+							{entry.isRented ? null :
+								<tr className="relative">
+									{headerCells.map(headerCell => {
+										if (headerCell.isHidden)
+											return
+										
+										let cellData: string = "";
+										if (headerCell.id == "options") 
+											return (
+											<div className="inline-block whitespace-nowrap align-middle px-2 py-2">
+												{options.map(option => {
+													return (
+														<button 
+															className="bg-gray-100 rounded-md px-2 py-1 m-1"
+															onClick={
+																(option.id == "update") 
+																// @ts-ignore
+																? (event => option.onClick(event, entry.id))
+																: (() => option.onClick)
+															}
+														>
+															<FontAwesomeIcon icon={option.icon} />
+														</button>)
+												})}
+											</div>
+											)
+										if (headerCell.id == "score") {
+											if (entry.score)
+												cellData = entry.score.toString();
+											else
+												cellData = calculateScore(entry).toString();
+										} else {
+											// @ts-ignore
+											cellData = entry[headerCell.id];
 
-										if (typeof cellData == "boolean") {
-											if (cellData) 
-												cellData = "Yes"
-											else 
-												cellData = "No"
+											if (typeof cellData == "boolean") {
+												if (cellData) 
+													cellData = "Yes"
+												else 
+													cellData = "No"
+											}
+
+											if (cellData == "")
+												cellData = "-"
 										}
 
-										if (cellData == "")
-											cellData = "-"
-									}
-
-									return (<td className={"whitespace-nowrap px-8 py-4" + (headerCell.id == "score" ? " text-lg" : "") + (headerCell.id == "address" ? " text-left" : "")}>{cellData}</td>)
-								})}
-							</tr>
+										return (<td className={"whitespace-nowrap px-8 py-4" + (headerCell.id == "score" ? " text-lg" : "") + (headerCell.id == "address" ? " text-left" : "")}>{cellData}</td>)
+									})}
+								</tr>
+							}
 							</>
 						)
 				})}

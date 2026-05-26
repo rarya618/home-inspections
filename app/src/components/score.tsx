@@ -3,40 +3,43 @@ import { Entry } from "./AddEntry";
 // returns the rent factor for property
 const getRentFactor = (rent: number) => {
   if (rent <= 270) {
-    return 500
+    return 520
   }
   if (rent <= 300) {
-    return 350
+    return 440
+  }
+  if (rent <= 320) {
+    return 370
   }
   if (rent <= 350) {
-    return 250
+    return 300
   }
   if (rent <= 370) {
-    return 150
+    return 250
   } 
   if (rent <= 390) {
-    return 50
+    return 200
   }
   if (rent <= 400) {
-    return 0
+    return 160
   }
   if (rent <= 410) {
-    return -60
+    return 80
   } 
   if (rent <= 420) {
-    return -120
+    return 0
   } 
   if (rent <= 450) {
-    return -240
+    return -140
   }
   if (rent <= 470) {
-    return -360
+    return -260
   }
   if (rent <= 490) {
-    return -480
+    return -380
   }
   if (rent <= 500) {
-    return -600
+    return -500
   }
 
   return -800
@@ -48,16 +51,16 @@ const getPTFactor = (minutesTaken: number, isMisc: boolean) => {
     return -100
   }
   if (minutesTaken <= 7 && !isMisc) {
-    return 180
+    return 200
   }
   if (minutesTaken <= 10 && !isMisc) {
-    return 150
+    return 160
   }
   if (minutesTaken <= 15) {
     if (!isMisc)
       return 100
     else 
-      return 120
+      return 160
   }
   if (minutesTaken <= 20 && !isMisc) {
     return 80
@@ -69,7 +72,7 @@ const getPTFactor = (minutesTaken: number, isMisc: boolean) => {
     if (!isMisc)
       return 40
     else
-      return 90
+      return 140
   } 
   if (minutesTaken <= 35 && !isMisc) {
     return 20
@@ -78,18 +81,18 @@ const getPTFactor = (minutesTaken: number, isMisc: boolean) => {
     if (!isMisc)
       return -30
     else
-      return 80
+      return 120
   } 
 
   if (minutesTaken <= 45) {
     if (!isMisc)
       return -60
     else
-      return 40
+      return 80
   } 
 
   if (isMisc) {
-    return 0
+    return 20
   }
 
   return -100
@@ -101,19 +104,19 @@ const getWalkingFactor = (minutesTaken: number) => {
     return -100
   }
   if (minutesTaken <= 3) {
-    return 240
-  }
-  if (minutesTaken <= 7) {
     return 200
   }
-  if (minutesTaken <= 15) {
+  if (minutesTaken <= 7) {
     return 160
   }
+  if (minutesTaken <= 15) {
+    return 120
+  }
   if (minutesTaken <= 22) {
-    return 110
+    return 90
   }
   if (minutesTaken <= 30) {
-    return 70
+    return 50
   } 
   if (minutesTaken <= 35) {
     return 10
@@ -125,46 +128,48 @@ const getWalkingFactor = (minutesTaken: number) => {
 // returns the grocery factor
 const getGroceryFactor = (minutesTaken: number) => {
   if (minutesTaken == 0) {
-    return -280
+    return -180
   }
-
+  if (minutesTaken <= 2) {
+    return 180
+  }
   if (minutesTaken <= 5) {
-    return 250
+    return 160
   }
   if (minutesTaken <= 10) {
-    return 150
+    return 130
   }
   if (minutesTaken <= 15) {
-    return 100
+    return 80
   }
   if (minutesTaken <= 20) {
-    return 40
+    return 50
   } 
   if (minutesTaken <= 25) {
-    return 10
+    return 20
   } 
   if (minutesTaken <= 30) {
-    return -100
+    return -50
   }
   if (minutesTaken <= 35) {
-    return -200
+    return -90
   }
 
-  return -280
+  return -180
 }
 
 // returns the utility factor for property
 const getUtilFactor = (hasElectricity: boolean, hasWater: boolean, hasInternet: boolean) => {
   let utilFactor = 0
 
-  if (hasElectricity) utilFactor += 100
-  else utilFactor -= 40
+  if (hasElectricity) utilFactor += 150
+  else utilFactor -= 100
 
-  if (hasWater) utilFactor += 100
-  else utilFactor -= 40
+  if (hasWater) utilFactor += 150
+  else utilFactor -= 100
 
-  if (hasInternet) utilFactor -= 10
-  else utilFactor += 80
+  if (hasInternet) utilFactor += 150
+  else utilFactor -= 100
 
   return utilFactor
 }
@@ -172,71 +177,71 @@ const getUtilFactor = (hasElectricity: boolean, hasWater: boolean, hasInternet: 
 // returns the ensuite factor for property
 const getEnsuiteFactor = (isEnsuite: boolean) => {
   if (isEnsuite)
-    return 150
+    return 200
   else
-    return -50
+    return -100
 }
 
 // returns the kitchen factor for property
 const getKitchenFactor = (isKitchenPrivate: boolean) => {
   if (isKitchenPrivate)
-    return 50
+    return 100
   else
-    return -150
+    return -100
 }
 
 // returns the furnished factor for property
 const getFurnishedFactor = (isFurnished: boolean) => {
   if (isFurnished)
-    return 300
+    return 200
   else
-    return -20
+    return -200
 }
 
 // returns the sharehouse factor for property
 const getSharehouseFactor = (isSharehouse: boolean) => {
   if (isSharehouse)
-    return -600
+    return -350
   else
-    return 100
+    return 350
 }
 
 // returns the train factor for property
 const getTrainFactor = (minutesTaken: number) => {
   if (minutesTaken == 0) {
-    return -200
+    return -100
   }
   if (minutesTaken <= 3) {
-    return 280
-  }
-  if (minutesTaken <= 6) {
     return 240
   }
-  if (minutesTaken <= 10) {
+  if (minutesTaken <= 6) {
     return 200
   }
+  if (minutesTaken <= 10) {
+    return 150
+  }
   if (minutesTaken <= 12) {
-    return 160
+    return 120
   }
   if (minutesTaken <= 15) {
-    return 100
+    return 80
   } 
   if (minutesTaken <= 18) {
-    return 50
+    return 40
   }
   if (minutesTaken <= 21) {
     return 0
   }
 
-  return -200
+  return -100
 }
 
 // returns the sharehouse factor for property
 const getInspectedFactor = (isInspected: boolean) => {
   if (isInspected)
-    return 400
+    return 100
   else
-    return 0
+    return -200
 }
 
 // returns the gyg factor for property
@@ -244,24 +249,23 @@ const getGygFactor = (minutesTaken: number) => {
   if (minutesTaken == 0) {
     return -100
   }
-
   if (minutesTaken <= 5) {
-    return 150
-  }
-  if (minutesTaken <= 10) {
-    return 120
-  }
-  if (minutesTaken <= 15) {
     return 100
   }
-  if (minutesTaken <= 20) {
+  if (minutesTaken <= 10) {
     return 60
+  }
+  if (minutesTaken <= 15) {
+    return 40
+  }
+  if (minutesTaken <= 20) {
+    return 20
   } 
   if (minutesTaken <= 25) {
     return 10
   } 
   if (minutesTaken <= 30) {
-    return -40
+    return -20
   }
 
   return -100
@@ -275,6 +279,10 @@ const calculateScore = (entry: Entry) => {
     // if already rented, do not calculate score
     if (entry.isRented) {
         return score;
+    }
+
+    if (entry.address == "2019/185-211 Broadway") {
+      score += 200
     }
 
     // add rent score
