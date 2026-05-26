@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
-import { getEntry, updateEntry } from "../firebase/database";
+import { getEntry, updateEntry, refreshTransitTimes } from "../firebase/database";
+import { TransitTimes } from "../utils/maps";
 import { labelStyle, textboxStyle } from "./AddEntry";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -51,6 +52,7 @@ function UpdateEntryForm(props: FormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     getEntry(props.currentEntry).then(tempData => {
@@ -90,6 +92,18 @@ function UpdateEntryForm(props: FormProps) {
       setIsSubmitting(false);
     }
   }
+
+  const handleRefreshTransit = async () => {
+    const address = (document.getElementById('address') as HTMLInputElement)?.value || data.address;
+    if (!address) return;
+    setIsRefreshing(true);
+    try {
+      const times = await refreshTransitTimes(props.currentEntry, address);
+      setData(prev => ({ ...prev, ...times }));
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useTitle("Update Entry")
 
@@ -148,6 +162,7 @@ function UpdateEntryForm(props: FormProps) {
               <Toggle id="isSharehouse" label="Sharehouse" defaultChecked={data.isSharehouse} />
               <Toggle id="hasAirCon" label="Air conditioning" defaultChecked={data.hasAirCon} />
               <Toggle id="isPetsAllowed" label="Pets allowed" defaultChecked={data.isPetsAllowed} />
+              <Toggle id="hasGarage" label="Garage" defaultChecked={data.hasGarage} />
               <Toggle id="isRented" label="Already rented" defaultChecked={data.isRented} />
             </div>
           </section>
@@ -164,30 +179,45 @@ function UpdateEntryForm(props: FormProps) {
 
           {/* Transit */}
           <section>
-            <SectionTitle>Transit (minutes)</SectionTitle>
-            <div className="grid grid-cols-2 gap-3">
-              <TextInput id="uniPT" label="Uni — bus / train" placeholder="0" defaultValue={data.uniPT} />
-              <TextInput id="uniWalk" label="Uni — walking" placeholder="0" defaultValue={data.uniWalk} />
-              <TextInput id="uniDrive" label="Uni — driving" placeholder="0" defaultValue={data.uniDrive} />
-              <TextInput id="workPT" label="Work — bus / train" placeholder="0" defaultValue={data.workPT} />
-              <TextInput id="workWalk" label="Work — walking" placeholder="0" defaultValue={data.workWalk} />
-              <TextInput id="workDrive" label="Work — driving" placeholder="0" defaultValue={data.workDrive} />
-              <TextInput id="trainWalk" label="Train station — walking" placeholder="0" defaultValue={data.trainWalk} />
-              <TextInput id="trainPT" label="Train station — bus / train" placeholder="0" defaultValue={data.trainPT} />
-              <TextInput id="trainDrive" label="Train station — driving" placeholder="0" defaultValue={data.trainDrive} />
-            </div>
-          </section>
-
-          {/* Nearby */}
-          <section>
-            <SectionTitle>Nearby (minutes)</SectionTitle>
-            <div className="grid grid-cols-2 gap-3">
-              <TextInput id="coles" label="Coles" placeholder="0" defaultValue={data.coles} />
-              <TextInput id="woolies" label="Woolworths" placeholder="0" defaultValue={data.woolies} />
-              <TextInput id="aldi" label="ALDI" placeholder="0" defaultValue={data.aldi} />
-
-              <TextInput id="gyg" label="GYG" placeholder="0" defaultValue={data.gyg} />
-              <TextInput id="shoppingCenter" label="Shopping centre" placeholder="0" defaultValue={data.shoppingCenter} />
+            <SectionTitle>Transit &amp; nearby</SectionTitle>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 space-y-3">
+              {([
+                'uniPT','uniWalk','uniDrive','workPT','workWalk','workDrive',
+                'trainWalk','trainPT','trainDrive',
+                'coles','woolies','aldi','gyg','shoppingCenter',
+              ] as (keyof TransitTimes)[]).some(k => data[k]) ? (
+                <div className="grid grid-cols-3 gap-x-4 gap-y-1.5 text-xs mb-1">
+                  {[
+                    { key: 'uniPT',          label: 'Uni 🚍' },
+                    { key: 'uniDrive',        label: 'Uni 🚗' },
+                    { key: 'workPT',          label: 'Work 🚍' },
+                    { key: 'workDrive',       label: 'Work 🚗' },
+                    { key: 'trainWalk',       label: 'Train 🚶' },
+                    { key: 'trainPT',         label: 'Train 🚍' },
+                    { key: 'trainDrive',      label: 'Train 🚗' },
+                    { key: 'coles',           label: 'Coles 🛒' },
+                    { key: 'woolies',         label: 'Woolies 🛒' },
+                    { key: 'aldi',            label: 'ALDI 🛒' },
+                    { key: 'gyg',             label: 'GYG 🌮' },
+                    { key: 'shoppingCenter',  label: 'Mall 🏬' },
+                  ].map(({ key, label }) => data[key] ? (
+                    <div key={key}>
+                      <span className="text-gray-400 dark:text-gray-500">{label} </span>
+                      <span className="font-bold text-gray-700 dark:text-gray-300">{data[key]}m</span>
+                    </div>
+                  ) : null)}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 dark:text-gray-500">No times fetched yet.</p>
+              )}
+              <button
+                type="button"
+                onClick={handleRefreshTransit}
+                disabled={isRefreshing}
+                className="w-full py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isRefreshing ? 'Fetching times…' : 'Refresh travel times'}
+              </button>
             </div>
           </section>
 

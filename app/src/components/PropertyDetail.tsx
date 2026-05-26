@@ -39,7 +39,7 @@ function StatTile({ emoji, label, value }: { emoji: string, label: string, value
       <span className="text-xl leading-none">{emoji}</span>
       <div className="min-w-0">
         <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{label}</p>
-        <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">{value}m</p>
+        <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">{value}min</p>
       </div>
     </div>
   );
@@ -61,7 +61,7 @@ function FeatureChip({ emoji, label, value }: { emoji: string, label: string, va
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400 dark:text-gray-600 mb-3 mt-8">{children}</h3>
+    <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-3 mt-8">{children}</h3>
   );
 }
 
@@ -130,7 +130,7 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
       </div>
 
       {/* Body */}
-      <div className="max-w-xl mx-auto px-4 pb-24">
+      <div className="max-w-3xl mx-auto px-4 pb-24">
 
         {/* Specs */}
         {(entry.bedrooms || entry.bathrooms || entry.carParks) && (
@@ -153,92 +153,92 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
           </div>
         )}
 
-        {/* Property features */}
-        {hasFeatures && (
-          <>
-            <SectionTitle>Property</SectionTitle>
-            <div className="grid grid-cols-2 gap-2">
-              <FeatureChip emoji="🚿" label="Ensuite"         value={entry.isEnsuite} />
-              <FeatureChip emoji="🍳" label="Private kitchen" value={entry.isKitchenPrivate} />
-              <FeatureChip emoji="🛋️" label="Furnished"       value={entry.isFurnished} />
-              <FeatureChip emoji="🏠" label="Whole place"     value={entry.isSharehouse === false ? true : entry.isSharehouse === true ? false : undefined} />
-              <FeatureChip emoji="❄️" label="Air con"         value={entry.hasAirCon} />
-              <FeatureChip emoji="🐾" label="Pets allowed"    value={entry.isPetsAllowed} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+
+          {/* Property features */}
+          {hasFeatures && (
+            <div>
+              <SectionTitle>Property</SectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <FeatureChip emoji="🚿" label="Ensuite"         value={entry.isEnsuite} />
+                <FeatureChip emoji="🍳" label="Private kitchen" value={entry.isKitchenPrivate} />
+                <FeatureChip emoji="🛋️" label="Furnished"       value={entry.isFurnished} />
+                <FeatureChip emoji="🏠" label="Whole place"     value={entry.isSharehouse === false ? true : entry.isSharehouse === true ? false : undefined} />
+                <FeatureChip emoji="❄️" label="Air con"         value={entry.hasAirCon} />
+                <FeatureChip emoji="🐾" label="Pets allowed"    value={entry.isPetsAllowed} />
+              <FeatureChip emoji="🏠" label="Garage"          value={entry.hasGarage} />
+              </div>
             </div>
-          </>
-        )}
+          )}
 
-        {/* Utilities */}
-        {hasUtils && (
-          <>
-            <SectionTitle>Utilities included</SectionTitle>
-            <div className="grid grid-cols-3 gap-2">
-              <FeatureChip emoji="⚡" label="Electricity" value={entry.hasElectricity} />
-              <FeatureChip emoji="💧" label="Water"       value={entry.hasWater} />
-              <FeatureChip emoji="📶" label="Internet"    value={entry.hasInternet} />
+          {/* Utilities */}
+          {hasUtils && (
+            <div>
+              <SectionTitle>Utilities included</SectionTitle>
+              <div className="grid grid-cols-3 gap-2">
+                <FeatureChip emoji="⚡" label="Electricity" value={entry.hasElectricity} />
+                <FeatureChip emoji="💧" label="Water"       value={entry.hasWater} />
+                <FeatureChip emoji="📶" label="Internet"    value={entry.hasInternet} />
+              </div>
             </div>
-          </>
-        )}
+          )}
 
-        {/* Transit */}
-        {hasTransit && (
-          <>
-            <SectionTitle>Transit</SectionTitle>
-            <div className="grid grid-cols-2 gap-2">
-              <StatTile emoji="🚍" label="Uni — bus/train"  value={entry.uniPT} />
-              <StatTile emoji="🚶" label="Uni — walking"    value={entry.uniWalk} />
-              <StatTile emoji="🚗" label="Uni — driving"    value={entry.uniDrive} />
-              <StatTile emoji="🚍" label="Work — bus/train" value={entry.workPT} />
-              <StatTile emoji="🚶" label="Work — walking"   value={entry.workWalk} />
-              <StatTile emoji="🚗" label="Work — driving"   value={entry.workDrive} />
-
-              <StatTile emoji="🚶" label="Train — walking"   value={entry.trainWalk} />
-              <StatTile emoji="🚍" label="Train — bus/train" value={entry.trainPT} />
-              <StatTile emoji="🚗" label="Train — driving"  value={entry.trainDrive} />
+          {/* Transit */}
+          {hasTransit && (
+            <div>
+              <SectionTitle>Transit</SectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <StatTile emoji="🚍" label="Uni — bus/train"  value={entry.uniPT} />
+                <StatTile emoji="🚗" label="Uni — driving"    value={entry.uniDrive} />
+                <StatTile emoji="🚍" label="Work — bus/train" value={entry.workPT} />
+                <StatTile emoji="🚗" label="Work — driving"   value={entry.workDrive} />
+                <StatTile emoji="🚶" label="Train — walking"   value={entry.trainWalk} />
+                <StatTile emoji="🚍" label="Train — bus/train" value={entry.trainPT} />
+                <StatTile emoji="🚗" label="Train — driving"  value={entry.trainDrive} />
+              </div>
             </div>
-          </>
-        )}
+          )}
 
-        {/* Nearby */}
-        {hasNearby && (
-          <>
-            <SectionTitle>Nearby</SectionTitle>
-            <div className="grid grid-cols-2 gap-2">
-              <StatTile emoji="🛒" label="Coles"          value={entry.coles} />
-              <StatTile emoji="🛒" label="Woolworths"     value={entry.woolies} />
-              <StatTile emoji="🛒" label="ALDI"           value={entry.aldi} />
-
-              <StatTile emoji="🌮" label="GYG"            value={entry.gyg} />
-              <StatTile emoji="🏬" label="Shopping centre" value={entry.shoppingCenter} />
+          {/* Nearby */}
+          {hasNearby && (
+            <div>
+              <SectionTitle>Nearby</SectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <StatTile emoji="🛒" label="Coles"           value={entry.coles} />
+                <StatTile emoji="🛒" label="Woolworths"      value={entry.woolies} />
+                <StatTile emoji="🛒" label="ALDI"            value={entry.aldi} />
+                <StatTile emoji="🌮" label="GYG"             value={entry.gyg} />
+                <StatTile emoji="🏬" label="Shopping centre" value={entry.shoppingCenter} />
+              </div>
             </div>
-          </>
-        )}
+          )}
 
-        {/* Offsets */}
-        {hasOffsets && (
-          <>
-            <SectionTitle>Score adjustments</SectionTitle>
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
-              {entry.size && entry.size !== "0" && (
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Size</span>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
-                    {parseInt(entry.size) > 0 ? "+" : ""}{parseInt(entry.size) * 100}
-                  </span>
-                </div>
-              )}
-              {entry.convenience && entry.convenience !== "0" && (
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Convenience</span>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
-                    {parseInt(entry.convenience) > 0 ? "+" : ""}{parseInt(entry.convenience) * 100}
-                  </span>
-                </div>
-              )}
+          {/* Offsets */}
+          {hasOffsets && (
+            <div>
+              <SectionTitle>Score adjustments</SectionTitle>
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
+                {entry.size && entry.size !== "0" && (
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Size</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
+                      {parseInt(entry.size) > 0 ? "+" : ""}{parseInt(entry.size) * 100}
+                    </span>
+                  </div>
+                )}
+                {entry.convenience && entry.convenience !== "0" && (
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Convenience</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">
+                      {parseInt(entry.convenience) > 0 ? "+" : ""}{parseInt(entry.convenience) * 100}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </>
-        )}
+          )}
 
+        </div>
       </div>
     </div>
   );

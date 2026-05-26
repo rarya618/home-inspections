@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { addEntry } from "../firebase/database";
+import { addEntryWithTransit } from "../firebase/database";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useTitle } from "../App";
@@ -77,6 +77,7 @@ export type Entry = {
   isInspected?: boolean,
   hasAirCon?: boolean,
   isPetsAllowed?: boolean,
+  hasGarage?: boolean,
   uniDrive?: string,
   workDrive?: string,
   rent: string,
@@ -152,7 +153,7 @@ function AddEntryForm(props: FormProps) {
       if (data.address === '') throw("Cannot leave address blank")
       if (data.rent === '') throw("Cannot leave rent blank")
       setIsSubmitting(true);
-      await addEntry(data);
+      await addEntryWithTransit(data);
       props.changeHandler();
     } catch (err) {
       // @ts-ignore
@@ -211,6 +212,7 @@ function AddEntryForm(props: FormProps) {
             <Toggle id="isSharehouse" label="Sharehouse" />
             <Toggle id="hasAirCon" label="Air conditioning" />
             <Toggle id="isPetsAllowed" label="Pets allowed" />
+            <Toggle id="hasGarage" label="Garage" />
             <Toggle id="isRented" label="Already rented" />
           </div>
         </section>
@@ -225,33 +227,12 @@ function AddEntryForm(props: FormProps) {
           </div>
         </section>
 
-        {/* Transit */}
+        {/* Transit + Nearby — auto-fetched from Google Maps after save */}
         <section>
-          <SectionTitle>Transit (minutes)</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
-            <TextInput id="uniPT" label="Uni — bus / train" placeholder="0" />
-            <TextInput id="uniWalk" label="Uni — walking" placeholder="0" />
-            <TextInput id="uniDrive" label="Uni — driving" placeholder="0" />
-            <TextInput id="workPT" label="Work — bus / train" placeholder="0" />
-            <TextInput id="workWalk" label="Work — walking" placeholder="0" />
-            <TextInput id="workDrive" label="Work — driving" placeholder="0" />
-            <TextInput id="trainWalk" label="Train station — walking" placeholder="0" />
-            <TextInput id="trainPT" label="Train station — bus / train" placeholder="0" />
-            <TextInput id="trainDrive" label="Train station — driving" placeholder="0" />
-          </div>
-        </section>
-
-        {/* Nearby */}
-        <section>
-          <SectionTitle>Nearby (minutes)</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
-            <TextInput id="coles" label="Coles" placeholder="0" />
-            <TextInput id="woolies" label="Woolworths" placeholder="0" />
-            <TextInput id="aldi" label="ALDI" placeholder="0" />
-
-            <TextInput id="gyg" label="GYG" placeholder="0" />
-            <TextInput id="shoppingCenter" label="Shopping centre" placeholder="0" />
-          </div>
+          <SectionTitle>Transit &amp; nearby</SectionTitle>
+          <p className="text-xs text-gray-400 dark:text-gray-500 -mt-1">
+            Travel times to uni, work, train station, and nearby places (Coles, Woolworths, ALDI, GYG, shopping centre) will be fetched automatically from Google Maps after saving.
+          </p>
         </section>
 
         {/* Adjustments */}

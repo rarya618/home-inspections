@@ -12,6 +12,7 @@ type Props = {
   setCurrentEntry: (newEntry: string) => void,
   changeHandler: () => void,
   onCardClick: (entry: Entry) => void,
+  transitMode: 'pt' | 'drive',
 }
 
 const getScoreMeta = (score: number) => {
@@ -32,11 +33,12 @@ const getScoreMeta = (score: number) => {
   };
 };
 
-function PropertyCard({ entry, onEdit, onDelete, onClick }: {
+function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
   entry: Entry,
   onEdit: () => void,
   onDelete: () => void,
   onClick: () => void,
+  transitMode: 'pt' | 'drive',
 }) {
   const score = entry.score ?? calculateScore(entry);
   const meta = getScoreMeta(score);
@@ -50,17 +52,21 @@ function PropertyCard({ entry, onEdit, onDelete, onClick }: {
   if (entry.isSharehouse)     features.push("👥");
   if (entry.hasAirCon)        features.push("❄️");
   if (entry.isPetsAllowed)    features.push("🐾");
+  if (entry.hasGarage)        features.push("🏠");
   if (entry.hasInternet)      features.push("📶");
   if (entry.hasElectricity)   features.push("⚡");
   if (entry.hasWater)         features.push("💧");
 
-  // Top 2 transit stats
   const transitStats: { label: string; value: string }[] = [];
-  if (entry.uniPT)   transitStats.push({ label: "Uni 🚍",  value: entry.uniPT });
-  if (entry.uniWalk) transitStats.push({ label: "Uni 🚶",  value: entry.uniWalk });
-  if (entry.workPT)  transitStats.push({ label: "Work 🚍", value: entry.workPT });
-  if (entry.trainWalk) transitStats.push({ label: "Train 🚶", value: entry.trainWalk });
-  if (entry.trainPT)   transitStats.push({ label: "Train 🚍", value: entry.trainPT });
+  if (transitMode === 'pt') {
+    if (entry.uniPT)   transitStats.push({ label: "Uni 🚍",   value: entry.uniPT });
+    if (entry.workPT)  transitStats.push({ label: "Work 🚍",  value: entry.workPT });
+    if (entry.trainPT) transitStats.push({ label: "Train 🚍", value: entry.trainPT });
+  } else {
+    if (entry.uniDrive)   transitStats.push({ label: "Uni 🚗",   value: entry.uniDrive });
+    if (entry.workDrive)  transitStats.push({ label: "Work 🚗",  value: entry.workDrive });
+    if (entry.trainDrive) transitStats.push({ label: "Train 🚗", value: entry.trainDrive });
+  }
   const topStats = transitStats.slice(0, 3);
 
   return (
@@ -113,11 +119,11 @@ function PropertyCard({ entry, onEdit, onDelete, onClick }: {
 
       {/* Transit stats */}
       {topStats.length > 0 && (
-        <div className="px-4 pb-3 flex gap-3 flex-wrap">
+        <div className="px-4 pb-3 pt-1 flex gap-4">
           {topStats.map(s => (
-            <div key={s.label} className="flex items-baseline gap-1">
-              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{s.label}</span>
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300 tabular-nums">{s.value}m</span>
+            <div key={s.label} className="flex flex-col items-start">
+              <span className="text-lg font-bold text-gray-800 dark:text-gray-200 tabular-nums leading-tight">{s.value}min</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap leading-tight mt-0.5">{s.label}</span>
             </div>
           ))}
         </div>
@@ -148,6 +154,7 @@ function PropertyCard({ entry, onEdit, onDelete, onClick }: {
 }
 
 function Table(props: Props) {
+  const { transitMode } = props;
   const [data, setData] = useState([sampleEntry]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -208,6 +215,7 @@ function Table(props: Props) {
           onEdit={() => handleEdit(entry.id)}
           onDelete={() => handleDelete(entry.id)}
           onClick={() => props.onCardClick(entry)}
+          transitMode={transitMode}
         />
       ))}
     </div>

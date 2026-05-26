@@ -276,15 +276,13 @@ const calculateScore = (entry: Entry) => {
     score += getRentFactor(rent)
 
     // add commute score (weighted blend per destination)
-    const uniPTMinutes   = entry.uniPT    ? parseInt(entry.uniPT)    : 0;
-    const uniWalkMinutes = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0;
-    const uniDriveMinutes = entry.uniDrive ? parseInt(entry.uniDrive) : 0;
-    const workPTMinutes   = entry.workPT   ? parseInt(entry.workPT)   : 0;
-    const workWalkMinutes = entry.workWalk ? parseInt(entry.workWalk) : 0;
+    const uniPTMinutes    = entry.uniPT     ? parseInt(entry.uniPT)     : 0;
+    const uniDriveMinutes = entry.uniDrive  ? parseInt(entry.uniDrive)  : 0;
+    const workPTMinutes   = entry.workPT    ? parseInt(entry.workPT)    : 0;
     const workDriveMinutes = entry.workDrive ? parseInt(entry.workDrive) : 0;
 
-    score += getCommuteScore(uniPTMinutes, uniWalkMinutes, uniDriveMinutes)
-    score += getCommuteScore(workPTMinutes, workWalkMinutes, workDriveMinutes)
+    score += getCommuteScore(uniPTMinutes, 0, uniDriveMinutes)
+    score += getCommuteScore(workPTMinutes, 0, workDriveMinutes)
 
     // add grocery score (best single store only)
     const groceryTimes = [
@@ -335,15 +333,17 @@ const calculateScore = (entry: Entry) => {
     score += getGygFactor(gygMinutes)
 
     // add bedrooms score (+150 per room above 1)
-    if (entry.bedrooms) {
-      const beds = parseInt(entry.bedrooms)
-      if (beds > 1) score += (beds - 1) * 150
-    }
+    if (beds > 1) score += (beds - 1) * 150
 
-    // add bathrooms score (+100 per bathroom above 1)
+    // add bathrooms score (based on ratio of bathrooms to people)
     if (entry.bathrooms) {
       const baths = parseInt(entry.bathrooms)
-      if (baths > 1) score += (baths - 1) * 100
+      const ratio = baths / beds
+      if (ratio >= 1.0)       score += 200
+      else if (ratio >= 0.67) score += 100
+      else if (ratio >= 0.5)  score += 0
+      else if (ratio >= 0.33) score -= 100
+      else                    score -= 200
     }
 
     // add car parks score
@@ -354,6 +354,9 @@ const calculateScore = (entry: Entry) => {
 
     // add pets allowed score
     if (entry.isPetsAllowed) score += 100
+
+    // add garage score
+    if (entry.hasGarage) score += 250
 
     // add offsets
     if (entry.size)
