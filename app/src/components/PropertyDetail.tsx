@@ -131,6 +131,27 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
       {/* Body */}
       <div className="max-w-xl mx-auto px-4 pb-24">
 
+        {/* Specs */}
+        {(entry.bedrooms || entry.bathrooms || entry.carParks) && (
+          <div className="flex gap-4 mt-6">
+            {entry.bedrooms && (
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span>🛏</span> {entry.bedrooms} bed
+              </div>
+            )}
+            {entry.bathrooms && (
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span>🚿</span> {entry.bathrooms} bath
+              </div>
+            )}
+            {entry.carParks && entry.carParks !== "0" && (
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span>🚗</span> {entry.carParks} park
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Property features */}
         {hasFeatures && (
           <>

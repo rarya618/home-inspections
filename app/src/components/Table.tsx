@@ -81,10 +81,19 @@ function PropertyCard({ entry, onEdit, onDelete, onClick }: {
         </div>
       </div>
 
-      {/* Rent */}
-      <div className="px-4 pb-3">
-        <span className="text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
-        <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">/wk</span>
+      {/* Rent + specs */}
+      <div className="px-4 pb-3 flex items-baseline justify-between">
+        <div>
+          <span className="text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">/wk</span>
+        </div>
+        {(entry.bedrooms || entry.bathrooms || entry.carParks) && (
+          <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+            {entry.bedrooms && <span>🛏 {entry.bedrooms}</span>}
+            {entry.bathrooms && <span>🚿 {entry.bathrooms}</span>}
+            {entry.carParks && entry.carParks !== "0" && <span>🚗 {entry.carParks}</span>}
+          </div>
+        )}
       </div>
 
       {/* Divider */}

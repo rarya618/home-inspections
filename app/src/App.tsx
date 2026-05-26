@@ -19,15 +19,6 @@ export function useTitle(title: string) {
 	})
 }
 
-// close button
-const closeButton = (toggle: () => void) => {
-  return (<button
-    className="px-2 pt-0 pb-0.5 mt-8 rounded-full bg-red-500 hover:bg-red-600 text-white fixed top-0 right-8 text-base transition-colors"
-    onClick={toggle}>
-      ×
-    </button>)
-}
-
 // button
 export function Button(text: string, onclick?: () => void) {
   return (
@@ -77,18 +68,12 @@ function App() {
     <>
     {
       isAddFormDisplayed ? (
-        <div className="flex flex-col h-screen pb-5 items-center">
-          <AddEntryForm changeHandler={changeAddFormDisplay}/>
-          {closeButton(changeAddFormDisplay)}
-        </div>
+        <AddEntryForm changeHandler={changeAddFormDisplay}/>
       ): isUpdateFormDisplayed ? (
-        <div className="flex flex-col h-screen pb-5 items-center">
-          <UpdateEntryForm
-            currentEntry={currentEntry}
-            setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
-            changeHandler={changeUpdateFormDisplay}/>
-          {closeButton(changeUpdateFormDisplay)}
-        </div>
+        <UpdateEntryForm
+          currentEntry={currentEntry}
+          setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
+          changeHandler={changeUpdateFormDisplay}/>
       ): isDetailDisplayed && currentEntryData ? (
         <PropertyDetail
           entry={currentEntryData}
@@ -97,8 +82,11 @@ function App() {
         />
       )
       : (<>
-      <div className="mx-2 my-2.5">
-        <h3 className="text-left text-3xl mb-5 font-bold">Dashboard</h3>
+      <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800 px-4 py-4">
+        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">HouseX</h1>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Property search tracker</p>
+      </div>
+      <div className="px-4 pt-4">
         <Table
           currentEntry={currentEntry}
           setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
