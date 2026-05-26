@@ -28,7 +28,9 @@ export const fields: Field[] = [
   {id: "workPT", label: "Work🚍", placeholder: "in minutes"},
   {id: "workWalk", label: "Work🚶", placeholder: "in minutes"},
 
-  {id: "train", label: "🚍 station (min.)", placeholder: "in minutes"},
+  {id: "trainWalk", label: "Train station 🚶", placeholder: "in minutes"},
+  {id: "trainPT", label: "Train station 🚍", placeholder: "in minutes"},
+  {id: "trainDrive", label: "Train station 🚗", placeholder: "in minutes"},
   {id: "coles", label: "Coles (min.)", placeholder: "in minutes"},
   {id: "woolies", label: "Woolies (min.)", placeholder: "in minutes"},
   {id: "aldi", label: "ALDI (min.)", placeholder: "in minutes"},
@@ -58,7 +60,9 @@ export type Entry = {
 
   aldi?: string,
   shoppingCenter?: string,
-  train?: string,
+  trainWalk?: string,
+  trainPT?: string,
+  trainDrive?: string,
   coles?: string,
   convenience?: string,
   gyg?: string,
@@ -231,7 +235,9 @@ function AddEntryForm(props: FormProps) {
             <TextInput id="workPT" label="Work — bus / train" placeholder="0" />
             <TextInput id="workWalk" label="Work — walking" placeholder="0" />
             <TextInput id="workDrive" label="Work — driving" placeholder="0" />
-            <TextInput id="train" label="Train station" placeholder="0" />
+            <TextInput id="trainWalk" label="Train station — walking" placeholder="0" />
+            <TextInput id="trainPT" label="Train station — bus / train" placeholder="0" />
+            <TextInput id="trainDrive" label="Train station — driving" placeholder="0" />
           </div>
         </section>
 

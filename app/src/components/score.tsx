@@ -2,133 +2,82 @@ import { Entry } from "./AddEntry";
 
 // returns the rent factor for property
 const getRentFactor = (rent: number) => {
-  if (rent <= 270) {
-    return 520
-  }
-  if (rent <= 300) {
-    return 440
-  }
-  if (rent <= 320) {
-    return 370
-  }
-  if (rent <= 350) {
+  if (rent <= 200) {
     return 300
   }
-  if (rent <= 370) {
-    return 250
-  } 
-  if (rent <= 390) {
-    return 200
+  if (rent <= 230) {
+    return 260
+  }
+  if (rent <= 250) {
+    return 220
+  }
+  if (rent <= 280) {
+    return 180
+  }
+  if (rent <= 300) {
+    return 140
+  }
+  if (rent <= 320) {
+    return 100
+  }
+  if (rent <= 330) {
+    return 60
+  }
+  if (rent <= 340) {
+    return 30
+  }
+  if (rent <= 350) {
+    return 0
+  }
+  if (rent <= 380) {
+    return -80
   }
   if (rent <= 400) {
-    return 160
+    return -160
   }
-  if (rent <= 410) {
-    return 80
-  } 
   if (rent <= 420) {
-    return 0
-  } 
-  if (rent <= 450) {
-    return -140
+    return -250
   }
-  if (rent <= 470) {
-    return -260
-  }
-  if (rent <= 490) {
-    return -380
-  }
-  if (rent <= 500) {
-    return -500
+  if (rent <= 430) {
+    return -350
   }
 
-  return -800
+  return -500
 }
 
 // returns the public transport factor for property
-const getPTFactor = (minutesTaken: number, isMisc: boolean) => {
-  if (minutesTaken == 0) {
-    return -100
-  }
-  if (minutesTaken <= 7 && !isMisc) {
-    return 200
-  }
-  if (minutesTaken <= 10 && !isMisc) {
-    return 160
-  }
-  if (minutesTaken <= 15) {
-    if (!isMisc)
-      return 100
-    else 
-      return 160
-  }
-  if (minutesTaken <= 20 && !isMisc) {
-    return 80
-  } 
-  if (minutesTaken <= 25 && !isMisc) {
-    return 60
-  } 
-  if (minutesTaken <= 30) {
-    if (!isMisc)
-      return 40
-    else
-      return 140
-  } 
-  if (minutesTaken <= 35 && !isMisc) {
-    return 20
-  } 
-  if (minutesTaken <= 40) {
-    if (!isMisc)
-      return -30
-    else
-      return 120
-  } 
-
-  if (minutesTaken <= 45) {
-    if (!isMisc)
-      return -60
-    else
-      return 80
-  } 
-
-  if (isMisc) {
-    return 20
-  }
-
-  return -100
+const getPTFactor = (minutesTaken: number, _isMisc: boolean) => {
+  if (minutesTaken == 0) return 0
+  if (minutesTaken <= 15) return 200
+  if (minutesTaken <= 20) return 160
+  if (minutesTaken <= 25) return 120
+  if (minutesTaken <= 30) return 80
+  if (minutesTaken <= 35) return 50
+  if (minutesTaken <= 40) return 20
+  if (minutesTaken <= 45) return 0
+  if (minutesTaken <= 55) return -50
+  if (minutesTaken <= 65) return -100
+  return -180
 }
 
 // returns the walking factor for property
 const getWalkingFactor = (minutesTaken: number) => {
-  if (minutesTaken == 0) {
-    return -100
-  }
-  if (minutesTaken <= 3) {
-    return 200
-  }
-  if (minutesTaken <= 7) {
-    return 160
-  }
-  if (minutesTaken <= 15) {
-    return 120
-  }
-  if (minutesTaken <= 22) {
-    return 90
-  }
-  if (minutesTaken <= 30) {
-    return 50
-  } 
-  if (minutesTaken <= 35) {
-    return 10
-  }
-
+  if (minutesTaken == 0) return 0
+  if (minutesTaken <= 5)  return 200
+  if (minutesTaken <= 10) return 160
+  if (minutesTaken <= 15) return 120
+  if (minutesTaken <= 20) return 80
+  if (minutesTaken <= 25) return 40
+  if (minutesTaken <= 30) return 10
+  if (minutesTaken <= 35) return 0
+  if (minutesTaken <= 45) return -40
   return -100
 }
 
 // returns the grocery factor
 const getGroceryFactor = (minutesTaken: number) => {
   if (minutesTaken == 0) {
-    return -180
+    return 0
   }
   if (minutesTaken <= 2) {
     return 180
@@ -193,9 +142,9 @@ const getKitchenFactor = (isKitchenPrivate: boolean) => {
 // returns the furnished factor for property
 const getFurnishedFactor = (isFurnished: boolean) => {
   if (isFurnished)
-    return 200
+    return 100
   else
-    return -200
+    return -100
 }
 
 // returns the sharehouse factor for property
@@ -206,61 +155,19 @@ const getSharehouseFactor = (isSharehouse: boolean) => {
     return 350
 }
 
-// returns the train factor for property
-const getTrainFactor = (minutesTaken: number) => {
-  if (minutesTaken == 0) {
-    return -100
-  }
-  if (minutesTaken <= 3) {
-    return 240
-  }
-  if (minutesTaken <= 6) {
-    return 200
-  }
-  if (minutesTaken <= 10) {
-    return 150
-  }
-  if (minutesTaken <= 12) {
-    return 120
-  }
-  if (minutesTaken <= 15) {
-    return 80
-  } 
-  if (minutesTaken <= 18) {
-    return 40
-  }
-  if (minutesTaken <= 21) {
-    return 0
-  }
-
-  return -100
-}
 
 // returns the driving factor for property
 const getDrivingFactor = (minutesTaken: number) => {
-  if (minutesTaken == 0) {
-    return -50
-  }
-  if (minutesTaken <= 10) {
-    return 150
-  }
-  if (minutesTaken <= 15) {
-    return 120
-  }
-  if (minutesTaken <= 20) {
-    return 90
-  }
-  if (minutesTaken <= 25) {
-    return 60
-  }
-  if (minutesTaken <= 30) {
-    return 30
-  }
-  if (minutesTaken <= 40) {
-    return 0
-  }
-
-  return -50
+  if (minutesTaken == 0) return 0
+  if (minutesTaken <= 10) return 150
+  if (minutesTaken <= 15) return 120
+  if (minutesTaken <= 20) return 90
+  if (minutesTaken <= 25) return 60
+  if (minutesTaken <= 30) return 30
+  if (minutesTaken <= 40) return 10
+  if (minutesTaken <= 45) return 0
+  if (minutesTaken <= 55) return -30
+  return -80
 }
 
 // returns the sharehouse factor for property
@@ -268,13 +175,13 @@ const getInspectedFactor = (isInspected: boolean) => {
   if (isInspected)
     return 100
   else
-    return -200
+    return -50
 }
 
 // returns the gyg factor for property
 const getGygFactor = (minutesTaken: number) => {
   if (minutesTaken == 0) {
-    return -100
+    return 0
   }
   if (minutesTaken <= 5) {
     return 100
@@ -299,6 +206,57 @@ const getGygFactor = (minutesTaken: number) => {
 }
 
 
+const getTrainStationPTFactor = (mins: number): number => {
+  if (mins == 0) return 0
+  if (mins <= 5)  return 200
+  if (mins <= 10) return 120
+  if (mins <= 15) return 40
+  if (mins <= 20) return -200
+  if (mins <= 25) return -400
+  return -600
+}
+
+const getTrainStationDriveFactor = (mins: number): number => {
+  if (mins == 0) return 0
+  if (mins <= 5)  return 200
+  if (mins <= 10) return 120
+  if (mins <= 15) return 40
+  if (mins <= 20) return -200
+  if (mins <= 25) return -400
+  return -600
+}
+
+const getTrainStationWalkFactor = (mins: number): number => {
+  if (mins == 0) return 0
+  if (mins <= 5)  return 200
+  if (mins <= 10) return 120
+  if (mins <= 15) return 40
+  if (mins <= 20) return -60
+  if (mins <= 25) return -140
+  if (mins <= 30) return -250
+  return -400
+}
+
+const getTrainStationScore = (ptMins: number, walkMins: number, driveMins: number): number => {
+  const modes: { score: number; weight: number }[] = []
+  if (ptMins > 0)    modes.push({ score: getTrainStationPTFactor(ptMins),    weight: 0.4 })
+  if (walkMins > 0)  modes.push({ score: getTrainStationWalkFactor(walkMins), weight: 0.3 })
+  if (driveMins > 0) modes.push({ score: getTrainStationDriveFactor(driveMins), weight: 0.3 })
+  if (modes.length === 0) return 0
+  const totalWeight = modes.reduce((s, m) => s + m.weight, 0)
+  return modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
+}
+
+const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): number => {
+  const modes: { score: number; weight: number }[] = []
+  if (ptMins > 0)    modes.push({ score: getPTFactor(ptMins, false),   weight: 0.4 })
+  if (walkMins > 0)  modes.push({ score: getWalkingFactor(walkMins),   weight: 0.3 })
+  if (driveMins > 0) modes.push({ score: getDrivingFactor(driveMins),  weight: 0.3 })
+  if (modes.length === 0) return 0
+  const totalWeight = modes.reduce((s, m) => s + m.weight, 0)
+  return modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
+}
+
 // returns the score of property
 const calculateScore = (entry: Entry) => {
     let score = 0
@@ -312,45 +270,38 @@ const calculateScore = (entry: Entry) => {
       score += 200
     }
 
-    // add rent score
-    let rent = parseInt(entry.rent)
+    // add rent score (per person: total rent ÷ bedrooms)
+    const beds = entry.bedrooms ? Math.max(1, parseInt(entry.bedrooms)) : 1
+    const rent = Math.round(parseInt(entry.rent) / beds)
     score += getRentFactor(rent)
 
-    // add pt score
-    let uniPTMinutes = entry.uniPT ? parseInt(entry.uniPT) : 0;
-    let workPTMinutes = entry.workPT ? parseInt(entry.workPT) : 0;
+    // add commute score (weighted blend per destination)
+    const uniPTMinutes   = entry.uniPT    ? parseInt(entry.uniPT)    : 0;
+    const uniWalkMinutes = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0;
+    const uniDriveMinutes = entry.uniDrive ? parseInt(entry.uniDrive) : 0;
+    const workPTMinutes   = entry.workPT   ? parseInt(entry.workPT)   : 0;
+    const workWalkMinutes = entry.workWalk ? parseInt(entry.workWalk) : 0;
+    const workDriveMinutes = entry.workDrive ? parseInt(entry.workDrive) : 0;
 
-    score += getPTFactor(uniPTMinutes, false)
-        + getPTFactor(workPTMinutes, false)
+    score += getCommuteScore(uniPTMinutes, uniWalkMinutes, uniDriveMinutes)
+    score += getCommuteScore(workPTMinutes, workWalkMinutes, workDriveMinutes)
 
-    // add walking score
-    let uniWalkMinutes = entry.uniWalk ? parseInt(entry.uniWalk) : 0;
-    let workWalkMinutes = entry.workWalk ? parseInt(entry.workWalk) : 0;
-
-    score += getWalkingFactor(uniWalkMinutes)
-      + getWalkingFactor(workWalkMinutes)
-
-    // add driving score
-    let uniDriveMinutes = entry.uniDrive ? parseInt(entry.uniDrive) : 0;
-    let workDriveMinutes = entry.workDrive ? parseInt(entry.workDrive) : 0;
-
-    score += getDrivingFactor(uniDriveMinutes)
-      + getDrivingFactor(workDriveMinutes)
-
-    // add grocery score
-    let colesMinutes = entry.coles ? parseInt(entry.coles) : 0
-    let wooliesMinutes = entry.woolies ? parseInt(entry.woolies) : 0
-    let aldiMinutes = entry.aldi ? parseInt(entry.aldi) : 0
-    let shoppingCenterMinutes = entry.shoppingCenter ? parseInt(entry.shoppingCenter) : 0
-    score += getGroceryFactor(colesMinutes)
-      + getGroceryFactor(wooliesMinutes)
-      + getGroceryFactor(aldiMinutes)
-      + getGroceryFactor(shoppingCenterMinutes)
+    // add grocery score (best single store only)
+    const groceryTimes = [
+      entry.coles ? parseInt(entry.coles) : 0,
+      entry.woolies ? parseInt(entry.woolies) : 0,
+      entry.aldi ? parseInt(entry.aldi) : 0,
+      entry.shoppingCenter ? parseInt(entry.shoppingCenter) : 0,
+    ].filter(m => m > 0)
+    const bestGrocery = groceryTimes.length > 0 ? Math.min(...groceryTimes) : 0
+    score += getGroceryFactor(bestGrocery)
     
 
-    // add train score
-    let trainMinutes = entry.train ? parseInt(entry.train) : 0
-    score += getTrainFactor(trainMinutes)
+    // add train station score (weighted blend)
+    const trainPTMinutes    = entry.trainPT    ? parseInt(entry.trainPT)    : 0
+    const trainWalkMinutes  = entry.trainWalk  ? parseInt(entry.trainWalk)  : 0
+    const trainDriveMinutes = entry.trainDrive ? parseInt(entry.trainDrive) : 0
+    score += getTrainStationScore(trainPTMinutes, trainWalkMinutes, trainDriveMinutes)
 
     // add utilities score
     let hasElectricity = entry.hasElectricity ? true : false;
@@ -411,7 +362,7 @@ const calculateScore = (entry: Entry) => {
     if (entry.convenience)
       score += parseInt(entry.convenience) * 100
 
-    return score
+    return Math.round(score)
 }
 
 

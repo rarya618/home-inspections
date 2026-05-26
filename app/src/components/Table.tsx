@@ -59,7 +59,8 @@ function PropertyCard({ entry, onEdit, onDelete, onClick }: {
   if (entry.uniPT)   transitStats.push({ label: "Uni 🚍",  value: entry.uniPT });
   if (entry.uniWalk) transitStats.push({ label: "Uni 🚶",  value: entry.uniWalk });
   if (entry.workPT)  transitStats.push({ label: "Work 🚍", value: entry.workPT });
-  if (entry.train)   transitStats.push({ label: "Train 🚉", value: entry.train });
+  if (entry.trainWalk) transitStats.push({ label: "Train 🚶", value: entry.trainWalk });
+  if (entry.trainPT)   transitStats.push({ label: "Train 🚍", value: entry.trainPT });
   const topStats = transitStats.slice(0, 3);
 
   return (

@@ -71,7 +71,7 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
 
   useTitle(entry.address || "Property");
 
-  const hasTransit = entry.uniPT || entry.uniWalk || entry.uniDrive || entry.workPT || entry.workWalk || entry.workDrive || entry.train;
+  const hasTransit = entry.uniPT || entry.uniWalk || entry.uniDrive || entry.workPT || entry.workWalk || entry.workDrive || entry.trainWalk || entry.trainPT || entry.trainDrive;
   const hasNearby  = entry.coles || entry.woolies || entry.aldi || entry.gyg || entry.shoppingCenter;
   const hasFeatures = entry.isEnsuite !== undefined || entry.isKitchenPrivate !== undefined ||
                       entry.isFurnished !== undefined || entry.isSharehouse !== undefined ||
@@ -192,7 +192,9 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
               <StatTile emoji="🚶" label="Work — walking"   value={entry.workWalk} />
               <StatTile emoji="🚗" label="Work — driving"   value={entry.workDrive} />
 
-              <StatTile emoji="🚉" label="Train station"    value={entry.train} />
+              <StatTile emoji="🚶" label="Train — walking"   value={entry.trainWalk} />
+              <StatTile emoji="🚍" label="Train — bus/train" value={entry.trainPT} />
+              <StatTile emoji="🚗" label="Train — driving"  value={entry.trainDrive} />
             </div>
           </>
         )}

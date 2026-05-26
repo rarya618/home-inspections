@@ -172,7 +172,9 @@ function UpdateEntryForm(props: FormProps) {
               <TextInput id="workPT" label="Work — bus / train" placeholder="0" defaultValue={data.workPT} />
               <TextInput id="workWalk" label="Work — walking" placeholder="0" defaultValue={data.workWalk} />
               <TextInput id="workDrive" label="Work — driving" placeholder="0" defaultValue={data.workDrive} />
-              <TextInput id="train" label="Train station" placeholder="0" defaultValue={data.train} />
+              <TextInput id="trainWalk" label="Train station — walking" placeholder="0" defaultValue={data.trainWalk} />
+              <TextInput id="trainPT" label="Train station — bus / train" placeholder="0" defaultValue={data.trainPT} />
+              <TextInput id="trainDrive" label="Train station — driving" placeholder="0" defaultValue={data.trainDrive} />
             </div>
           </section>
 
