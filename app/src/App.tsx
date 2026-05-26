@@ -20,7 +20,7 @@ export function useTitle(title: string) {
 // close button
 const closeButton = (toggle: () => void) => {
   return (<button 
-    className="px-2 pt-0 pb-0.5 mt-8 rounded-full bg-red-500 text-white fixed top-0 right-8 text-base"
+    className="px-2 pt-0 pb-0.5 mt-8 rounded-full bg-red-500 hover:bg-red-600 text-white fixed top-0 right-8 text-base transition-colors"
     onClick={toggle}>
       ×
     </button>)
@@ -29,9 +29,12 @@ const closeButton = (toggle: () => void) => {
 // button
 export function Button(text: string, onclick?: () => void) {
   return (
-    <button 
-      className="px-8 py-2 rounded-md fixed bottom-10 right-8 bg-indigo-500 text-white"
-      onClick={onclick}>{text}</button>
+    <button
+      className="fixed bottom-8 right-8 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-5 py-3 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-150"
+      onClick={onclick}>
+      <span className="text-lg leading-none">+</span>
+      {text}
+    </button>
   )
 }
 
@@ -70,7 +73,7 @@ function App() {
       )
       : (<>
       <div className="mx-2 my-2.5">
-        <h3 className="text-left text-3xl mb-5">Dashboard</h3>
+        <h3 className="text-left text-3xl mb-5 font-bold">Dashboard</h3>
         <Table 
           currentEntry={currentEntry}
           setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)} 

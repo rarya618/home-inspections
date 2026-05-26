@@ -1,6 +1,6 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { addEntry } from "../firebase/database";
-import { Button, useTitle } from "../App";
+import { useTitle } from "../App";
 
 type Field = {
   id: string,
@@ -11,7 +11,7 @@ type Field = {
 }
 
 export const formStyle = "bg-white dark:bg-black text-black dark:text-white rounded-md px-8 py-7 mt-0 mb-10 shadow"
-export const textboxStyle = "relative text-sm bg-gray-100 text-black px-4 py-2 rounded right-0"
+export const textboxStyle = "relative text-sm bg-gray-100 dark:bg-gray-800 text-black dark:text-white px-4 py-2 rounded right-0 transition-colors"
 export const checkboxStyle = "mx-0 my-3 w-4 h-4 rounded"
 export const labelStyle = "m-0 pr-5 py-2 w-32 text-left"
 
@@ -50,7 +50,7 @@ export type Entry = {
   score: number,
   suburb?: string,
   "7eleven"?: string,
-  aldi?: string, 
+  aldi?: string,
   broadway?: string,
   train?: string,
   coles?: string,
@@ -75,67 +75,64 @@ export type Entry = {
   workWalk?: string
 }
 
-// sample entry to create dataset
 export const sampleEntry: Entry = {id: "null", address: "sample", rent: "0", score: 0};
 
 type FormProps = {
   changeHandler: () => void
 }
 
-// main form function
 function AddEntryForm(props: FormProps) {
-  
-  // form submit operation
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const formSubmit = async (event: FormEvent) => {
-		event.preventDefault();
+    event.preventDefault();
+    setError(null);
 
-		// @ts-ignore
-		const elementsArray = [...event.target.elements];
+    // @ts-ignore
+    const elementsArray = [...event.target.elements];
 
-		const data = elementsArray.reduce((acc, element) => {
-			if (element.id) {
+    const data = elementsArray.reduce((acc, element) => {
+      if (element.id) {
         if (element.type == "checkbox") {
-  				acc[element.id] = element.checked;
+          acc[element.id] = element.checked;
         } else {
-  				acc[element.id] = element.value;
+          acc[element.id] = element.value;
         }
-			}
-
-			return acc;
-		}, {});
+      }
+      return acc;
+    }, {});
 
     try {
-      // check for required data
-			if (data.address === '') throw("Cannot leave address blank")
+      if (data.address === '') throw("Cannot leave address blank")
       if (data.rent === '') throw("Cannot leave rent blank")
-				
-			await addEntry(data);
-
-      // hide form after doc is added
+      setIsSubmitting(true);
+      await addEntry(data);
       props.changeHandler();
-		} catch (error) {
-			// @ts-ignore
-			alert(error);
-		}
+    } catch (err) {
+      // @ts-ignore
+      setError(String(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-	useTitle("Add Entry")
-
+  useTitle("Add Entry")
 
   return (
     <form className={formStyle} onSubmit={formSubmit}>
-      <h2 className="mb-4 text-xl">New entry</h2>
+      <h2 className="mb-4 text-xl font-semibold">New entry</h2>
       {fields.map(field => {
         return (
           <div className="my-2 flex w-full">
             <p className={labelStyle}>{field.label}</p>
-            {field.dataType == "checkbox" ? 
-              <input 
+            {field.dataType == "checkbox" ?
+              <input
                 className={checkboxStyle}
                 id={field.id}
                 type={field.dataType}
-              /> : 
-              <input 
+              /> :
+              <input
                 className={textboxStyle}
                 placeholder={field.placeholder}
                 id={field.id}
@@ -144,10 +141,16 @@ function AddEntryForm(props: FormProps) {
           </div>
         )
       })}
-      {Button("Submit")}
+      {error && <p className="text-red-500 text-sm mb-3 px-1">{error}</p>}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="mt-4 px-8 py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
+      >
+        {isSubmitting ? "Submitting..." : "Submit"}
+      </button>
     </form>
   )
 }
 
 export default AddEntryForm
-

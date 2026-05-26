@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { getEntry, updateEntry } from "../firebase/database";
 import { checkboxStyle, fields, formStyle, labelStyle, textboxStyle } from "./AddEntry";
-import { Button, useTitle } from "../App";
+import { useTitle } from "../App";
 
 type FormProps = {
   currentEntry: string,
@@ -10,29 +10,28 @@ type FormProps = {
 }
 
 function UpdateEntryForm(props: FormProps) {
-	const [data, setData] = useState({});
+  const [data, setData] = useState({});
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // get data
   const getData = async () => {
     let tempData = await getEntry(props.currentEntry)
-
     // @ts-ignore
     setData(tempData)
   }
 
-  // call function
-	useEffect(() => {
-		getData();
-	}, [])
+  useEffect(() => {
+    getData();
+  }, [])
 
-  // form submit operation
   const formSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setError(null);
 
     // @ts-ignore
     const elementsArray = [...event.target.elements];
 
-    const data = elementsArray.reduce((acc, element) => {
+    const formData = elementsArray.reduce((acc, element) => {
       if (element.id) {
         if (element.type == "checkbox") {
           acc[element.id] = element.checked;
@@ -40,22 +39,20 @@ function UpdateEntryForm(props: FormProps) {
           acc[element.id] = element.value;
         }
       }
-
       return acc;
     }, {});
 
     try {
-      // check for required data
-      if (data.address === '') throw("Cannot leave address blank")
-      if (data.rent === '') throw("Cannot leave rent blank")
-          
-      await updateEntry(props.currentEntry, data);
-
-      // hide form after doc is added
+      if (formData.address === '') throw("Cannot leave address blank")
+      if (formData.rent === '') throw("Cannot leave rent blank")
+      setIsSubmitting(true);
+      await updateEntry(props.currentEntry, formData);
       props.changeHandler();
-    } catch (error) {
+    } catch (err) {
       // @ts-ignore
-      alert(error);
+      setError(String(err));
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -63,20 +60,20 @@ function UpdateEntryForm(props: FormProps) {
 
   return (
     <form className={formStyle} onSubmit={formSubmit}>
-      <h2 className="mb-4 text-xl">Update entry</h2>
+      <h2 className="mb-4 text-xl font-semibold">Update entry</h2>
       {fields.map(field => {
         return (
           <div className="my-2 flex w-full">
             <p className={labelStyle}>{field.label}</p>
-            {field.dataType == "checkbox" ? 
-              <input 
+            {field.dataType == "checkbox" ?
+              <input
                 className={checkboxStyle}
                 id={field.id}
                 type={field.dataType}
                 // @ts-ignore
                 defaultChecked={data[field.id]}
-              /> : 
-              <input 
+              /> :
+              <input
                 className={textboxStyle}
                 placeholder={field.placeholder}
                 id={field.id}
@@ -87,7 +84,14 @@ function UpdateEntryForm(props: FormProps) {
           </div>
         )
       })}
-      {Button("Update")}
+      {error && <p className="text-red-500 text-sm mb-3 px-1">{error}</p>}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="mt-4 px-8 py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
+      >
+        {isSubmitting ? "Updating..." : "Update"}
+      </button>
     </form>
   )
 }
