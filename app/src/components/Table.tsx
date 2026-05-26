@@ -10,155 +10,124 @@ import { useTitle } from "../App";
 type Props = {
   currentEntry: string,
   setCurrentEntry: (newEntry: string) => void,
-  changeHandler: () => void
+  changeHandler: () => void,
+  onCardClick: (entry: Entry) => void,
 }
 
 const getScoreMeta = (score: number) => {
   if (score >= 1000) return {
-    bg: "bg-emerald-500",
-    text: "text-white",
-    ring: "ring-emerald-400/30",
+    border: "border-l-emerald-500",
+    scoreText: "text-emerald-600 dark:text-emerald-400",
+    scoreBg: "bg-emerald-50 dark:bg-emerald-950/60",
   };
   if (score >= 0) return {
-    bg: "bg-amber-400",
-    text: "text-amber-950",
-    ring: "ring-amber-300/30",
+    border: "border-l-amber-400",
+    scoreText: "text-amber-600 dark:text-amber-400",
+    scoreBg: "bg-amber-50 dark:bg-amber-950/60",
   };
   return {
-    bg: "bg-red-500",
-    text: "text-white",
-    ring: "ring-red-400/30",
+    border: "border-l-red-500",
+    scoreText: "text-red-600 dark:text-red-400",
+    scoreBg: "bg-red-50 dark:bg-red-950/60",
   };
 };
 
-function Chip({ label, active, color = "default" }: { label: string, active: boolean, color?: "default" | "green" | "red" }) {
-  if (!active) return null;
-  const colorClass =
-    color === "green" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" :
-    color === "red"   ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400" :
-                        "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300";
-  return (
-    <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${colorClass}`}>
-      {label}
-    </span>
-  );
-}
-
-function Stat({ label, value }: { label: string, value: string | undefined }) {
-  if (!value || value === "0" || value === "") return null;
-  return (
-    <div className="flex items-baseline gap-1">
-      <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{label}</span>
-      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 tabular-nums">{value}m</span>
-    </div>
-  );
-}
-
-function PropertyCard({ entry, onEdit, onDelete }: {
+function PropertyCard({ entry, onEdit, onDelete, onClick }: {
   entry: Entry,
   onEdit: () => void,
   onDelete: () => void,
+  onClick: () => void,
 }) {
   const score = entry.score ?? calculateScore(entry);
-  const scoreMeta = getScoreMeta(score);
+  const meta = getScoreMeta(score);
 
-  const hasAnyTransit = entry.uniPT || entry.uniWalk || entry.workPT || entry.workWalk || entry.miscPT || entry.train;
-  const hasAnyGrocery = entry.coles || entry.woolies || entry.aldi || entry["7eleven"];
-  const hasAnyUtil = entry.hasElectricity || entry.hasWater || entry.hasInternet;
+  // Build a compact feature dot row — only show what's present
+  const features: string[] = [];
+  if (entry.isInspected)      features.push("✓");
+  if (entry.isEnsuite)        features.push("🚿");
+  if (entry.isKitchenPrivate) features.push("🍳");
+  if (entry.isFurnished)      features.push("🛋️");
+  if (entry.isSharehouse)     features.push("👥");
+  if (entry.hasInternet)      features.push("📶");
+  if (entry.hasElectricity)   features.push("⚡");
+  if (entry.hasWater)         features.push("💧");
+
+  // Top 2 transit stats
+  const transitStats: { label: string; value: string }[] = [];
+  if (entry.uniPT)   transitStats.push({ label: "Uni 🚍",  value: entry.uniPT });
+  if (entry.uniWalk) transitStats.push({ label: "Uni 🚶",  value: entry.uniWalk });
+  if (entry.workPT)  transitStats.push({ label: "Work 🚍", value: entry.workPT });
+  if (entry.train)   transitStats.push({ label: "Train 🚉", value: entry.train });
+  const topStats = transitStats.slice(0, 3);
 
   return (
-    <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col overflow-hidden">
-
-      {/* Score badge */}
-      <div className="absolute top-4 right-4">
-        <div className={`${scoreMeta.bg} ${scoreMeta.text} ${scoreMeta.ring} ring-4 w-14 h-14 rounded-full flex items-center justify-center`}>
-          <span className="text-sm font-bold leading-none tabular-nums">{score}</span>
+    <div
+      className={`group relative bg-white dark:bg-gray-900 rounded-xl border-l-4 ${meta.border} border-t border-r border-b border-t-gray-100 border-r-gray-100 border-b-gray-100 dark:border-t-gray-800 dark:border-r-gray-800 dark:border-b-gray-800 shadow-sm hover:shadow-lg transition-all duration-200 flex flex-col cursor-pointer overflow-hidden`}
+      onClick={onClick}
+    >
+      {/* Header row: address + score */}
+      <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-sm font-bold text-gray-900 dark:text-white leading-snug truncate">
+            {entry.address || "—"}
+          </h2>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+            {entry.suburb || "—"}
+          </p>
         </div>
-      </div>
-
-      {/* Header */}
-      <div className="px-5 pt-5 pb-4 pr-20">
-        {entry.isInspected && (
-          <span className="inline-block text-xs font-semibold tracking-wide text-emerald-600 dark:text-emerald-400 uppercase mb-2">
-            ✓ Inspected
-          </span>
-        )}
-        <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">{entry.address || "—"}</h2>
-        {entry.suburb && (
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">{entry.suburb}</p>
-        )}
+        <div className={`shrink-0 ${meta.scoreBg} ${meta.scoreText} rounded-lg px-2.5 py-1.5 text-right`}>
+          <p className="text-lg font-extrabold leading-none tabular-nums">{score}</p>
+          <p className="text-[10px] font-semibold opacity-70 mt-0.5">score</p>
+        </div>
       </div>
 
       {/* Rent */}
-      <div className="px-5 pb-4">
-        <span className="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 tabular-nums">
-          ${entry.rent}
-        </span>
+      <div className="px-4 pb-3">
+        <span className="text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
         <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">/wk</span>
       </div>
 
-      {/* Feature chips */}
-      <div className="px-5 pb-4 flex flex-wrap gap-1.5">
-        <Chip label="Ensuite" active={!!entry.isEnsuite} color="green" />
-        <Chip label="Private Kitchen" active={!!entry.isKitchenPrivate} color="green" />
-        <Chip label="Furnished" active={!!entry.isFurnished} color="green" />
-        <Chip label="Sharehouse" active={!!entry.isSharehouse} color="red" />
-        {hasAnyUtil && (
-          <>
-            <Chip label="⚡ Electricity" active={!!entry.hasElectricity} />
-            <Chip label="💧 Water" active={!!entry.hasWater} />
-            <Chip label="📶 Internet" active={!!entry.hasInternet} />
-          </>
-        )}
-      </div>
+      {/* Divider */}
+      <div className="mx-4 border-t border-gray-100 dark:border-gray-800" />
 
-      {/* Transit stats */}
-      {hasAnyTransit && (
-        <div className="px-5 pb-4 border-t border-gray-50 dark:border-gray-800 pt-3">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-wider mb-2">Transit</p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <Stat label="🚍 Uni" value={entry.uniPT} />
-            <Stat label="🚶 Uni" value={entry.uniWalk} />
-            <Stat label="🚍 Work" value={entry.workPT} />
-            <Stat label="🚶 Work" value={entry.workWalk} />
-            <Stat label="🚍 Misc" value={entry.miscPT} />
-            <Stat label="🚉 Train" value={entry.train} />
-          </div>
+      {/* Feature dots */}
+      {features.length > 0 && (
+        <div className="px-4 py-2.5 flex gap-1.5 flex-wrap">
+          {features.map((f, i) => (
+            <span key={i} className="text-sm leading-none">{f}</span>
+          ))}
         </div>
       )}
 
-      {/* Grocery stats */}
-      {hasAnyGrocery && (
-        <div className="px-5 pb-4 border-t border-gray-50 dark:border-gray-800 pt-3">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-wider mb-2">Nearby</p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <Stat label="Coles" value={entry.coles} />
-            <Stat label="Woolies" value={entry.woolies} />
-            <Stat label="ALDI" value={entry.aldi} />
-            <Stat label="7-Eleven" value={entry["7eleven"]} />
-            <Stat label="GYG" value={entry.gyg} />
-            <Stat label="Broadway" value={entry.broadway} />
-          </div>
+      {/* Transit stats */}
+      {topStats.length > 0 && (
+        <div className="px-4 pb-3 flex gap-3 flex-wrap">
+          {topStats.map(s => (
+            <div key={s.label} className="flex items-baseline gap-1">
+              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">{s.label}</span>
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300 tabular-nums">{s.value}m</span>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Actions */}
-      <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+      {/* Actions — hidden until hover */}
+      <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-150">
         <button
-          onClick={onEdit}
-          className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          onClick={e => { e.stopPropagation(); onEdit(); }}
+          className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
         >
-          <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
+          <FontAwesomeIcon icon={faPenToSquare} />
           Edit
         </button>
         <button
-          onClick={onDelete}
-          className="flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+          onClick={e => { e.stopPropagation(); onDelete(); }}
+          className="flex items-center gap-1.5 text-xs font-medium text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
         >
-          <FontAwesomeIcon icon={faTrash} className="text-xs" />
+          <FontAwesomeIcon icon={faTrash} />
           Delete
         </button>
       </div>
@@ -219,13 +188,14 @@ function Table(props: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-24">
       {visibleEntries.map(entry => (
         <PropertyCard
           key={entry.id}
           entry={entry}
           onEdit={() => handleEdit(entry.id)}
           onDelete={() => handleDelete(entry.id)}
+          onClick={() => props.onCardClick(entry)}
         />
       ))}
     </div>

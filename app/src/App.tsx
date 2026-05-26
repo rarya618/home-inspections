@@ -3,6 +3,8 @@ import './App.css'
 import Table from './components/Table'
 import AddEntryForm from './components/AddEntry';
 import UpdateEntryForm from './components/UpdateEntry';
+import PropertyDetail from './components/PropertyDetail';
+import { Entry } from './components/AddEntry';
 
 // set page title
 export function useTitle(title: string) {
@@ -10,7 +12,7 @@ export function useTitle(title: string) {
 		const prevTitle = document.title;
 
 		document.title = title + " - HouseX";
-		
+
 		return () => {
 			document.title = prevTitle
 		}
@@ -19,7 +21,7 @@ export function useTitle(title: string) {
 
 // close button
 const closeButton = (toggle: () => void) => {
-  return (<button 
+  return (<button
     className="px-2 pt-0 pb-0.5 mt-8 rounded-full bg-red-500 hover:bg-red-600 text-white fixed top-0 right-8 text-base transition-colors"
     onClick={toggle}>
       ×
@@ -42,7 +44,9 @@ export function Button(text: string, onclick?: () => void) {
 function App() {
   const [isAddFormDisplayed, toggleAddFormDisplay] = useState(false)
   const [isUpdateFormDisplayed, toggleUpdateFormDisplay] = useState(false)
+  const [isDetailDisplayed, toggleDetailDisplay] = useState(false)
   const [currentEntry, setCurrentEntry] = useState("none")
+  const [currentEntryData, setCurrentEntryData] = useState<Entry | null>(null)
 
   const changeAddFormDisplay = () => {
     toggleAddFormDisplay(!isAddFormDisplayed);
@@ -52,8 +56,23 @@ function App() {
     toggleUpdateFormDisplay(!isUpdateFormDisplayed);
   };
 
+  const openDetail = (entry: Entry) => {
+    setCurrentEntryData(entry);
+    setCurrentEntry(entry.id);
+    toggleDetailDisplay(true);
+  };
+
+  const closeDetail = () => {
+    toggleDetailDisplay(false);
+  };
+
+  const openEditFromDetail = () => {
+    toggleDetailDisplay(false);
+    toggleUpdateFormDisplay(true);
+  };
+
   useTitle("Home Inspections")
-  
+
   return (
     <>
     {
@@ -64,20 +83,27 @@ function App() {
         </div>
       ): isUpdateFormDisplayed ? (
         <div className="flex flex-col h-screen pb-5 items-center">
-          <UpdateEntryForm 
-            currentEntry={currentEntry} 
-            setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)} 
+          <UpdateEntryForm
+            currentEntry={currentEntry}
+            setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
             changeHandler={changeUpdateFormDisplay}/>
           {closeButton(changeUpdateFormDisplay)}
         </div>
+      ): isDetailDisplayed && currentEntryData ? (
+        <PropertyDetail
+          entry={currentEntryData}
+          onClose={closeDetail}
+          onEdit={openEditFromDetail}
+        />
       )
       : (<>
       <div className="mx-2 my-2.5">
         <h3 className="text-left text-3xl mb-5 font-bold">Dashboard</h3>
-        <Table 
+        <Table
           currentEntry={currentEntry}
-          setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)} 
+          setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
           changeHandler={changeUpdateFormDisplay}
+          onCardClick={openDetail}
         />
       </div>
       {Button("Add entry", changeAddFormDisplay)}
