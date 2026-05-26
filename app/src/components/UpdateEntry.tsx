@@ -139,6 +139,7 @@ function UpdateEntryForm(props: FormProps) {
             <SectionTitle>Property</SectionTitle>
             <div className="space-y-3">
               <TextInput id="address" label="Address" placeholder="Full address" defaultValue={data.address} />
+              <TextInput id="listing" label="Listing URL" placeholder="https://..." defaultValue={data.listing} />
               <div className="grid grid-cols-2 gap-3">
                 <TextInput id="rent" label="Weekly rent ($)" placeholder="380" defaultValue={data.rent} />
                 <TextInput id="suburb" label="Suburb" placeholder="Surry Hills" defaultValue={data.suburb} />

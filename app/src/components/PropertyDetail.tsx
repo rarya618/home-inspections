@@ -12,23 +12,35 @@ type Props = {
 }
 
 const getScoreMeta = (score: number) => {
-  if (score >= 1000) return {
+  if (score >= 800) return {
     gradient: "from-emerald-500 to-teal-600",
     badge: "bg-white/20 text-white",
-    accent: "text-emerald-600 dark:text-emerald-400",
     label: "Strong match",
   };
-  if (score >= 0) return {
-    gradient: "from-amber-400 to-orange-500",
+  if (score >= 650) return {
+    gradient: "from-teal-400 to-cyan-500",
     badge: "bg-white/20 text-white",
-    accent: "text-amber-600 dark:text-amber-400",
+    label: "Good match",
+  };
+  if (score >= 450) return {
+    gradient: "from-sky-400 to-blue-500",
+    badge: "bg-white/20 text-white",
     label: "Moderate match",
+  };
+  if (score >= 300) return {
+    gradient: "from-amber-400 to-yellow-500",
+    badge: "bg-white/20 text-white",
+    label: "Decent match",
+  };
+  if (score >= 0) return {
+    gradient: "from-orange-400 to-amber-500",
+    badge: "bg-white/20 text-white",
+    label: "Passable",
   };
   return {
     gradient: "from-red-500 to-rose-600",
     badge: "bg-white/20 text-white",
-    accent: "text-red-600 dark:text-red-400",
-    label: "Weak match",
+    label: "Bad match",
   };
 };
 
@@ -114,6 +126,16 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
             </h1>
             {entry.suburb && (
               <p className="text-sm text-white/70 mt-1">{entry.suburb}</p>
+            )}
+            {entry.listing && (
+              <a
+                href={entry.listing}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-white/70 hover:text-white mt-2 transition-colors"
+              >
+                View listing ↗
+              </a>
             )}
           </div>
           <div className={`${meta.badge} shrink-0 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-center min-w-[72px]`}>

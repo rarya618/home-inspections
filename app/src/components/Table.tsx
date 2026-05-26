@@ -16,15 +16,30 @@ type Props = {
 }
 
 const getScoreMeta = (score: number) => {
-  if (score >= 1000) return {
+  if (score >= 800) return {
     border: "border-l-emerald-500",
     scoreText: "text-emerald-600 dark:text-emerald-400",
     scoreBg: "bg-emerald-50 dark:bg-emerald-950/60",
   };
-  if (score >= 0) return {
+  if (score >= 650) return {
+    border: "border-l-teal-500",
+    scoreText: "text-teal-600 dark:text-teal-400",
+    scoreBg: "bg-teal-50 dark:bg-teal-950/60",
+  };
+  if (score >= 450) return {
+    border: "border-l-sky-500",
+    scoreText: "text-sky-600 dark:text-sky-400",
+    scoreBg: "bg-sky-50 dark:bg-sky-950/60",
+  };
+  if (score >= 300) return {
     border: "border-l-amber-400",
     scoreText: "text-amber-600 dark:text-amber-400",
     scoreBg: "bg-amber-50 dark:bg-amber-950/60",
+  };
+  if (score >= 0) return {
+    border: "border-l-orange-400",
+    scoreText: "text-orange-600 dark:text-orange-400",
+    scoreBg: "bg-orange-50 dark:bg-orange-950/60",
   };
   return {
     border: "border-l-red-500",
@@ -122,7 +137,7 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
         <div className="px-4 pb-3 pt-1 flex gap-4">
           {topStats.map(s => (
             <div key={s.label} className="flex flex-col items-start">
-              <span className="text-lg font-bold text-gray-800 dark:text-gray-200 tabular-nums leading-tight">{s.value}min</span>
+              <span className="text-lg font-bold text-gray-800 dark:text-gray-200 tabular-nums leading-tight">{s.value}<span className="text-xs font-medium text-gray-400 dark:text-gray-500 ml-1">min</span></span>
               <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap leading-tight mt-0.5">{s.label}</span>
             </div>
           ))}

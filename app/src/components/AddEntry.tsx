@@ -53,6 +53,7 @@ export type Entry = {
   id: string,
   address: string,
   score: number,
+  listing?: string,
   suburb?: string,
   bedrooms?: string,
   bathrooms?: string,
@@ -189,6 +190,7 @@ function AddEntryForm(props: FormProps) {
           <SectionTitle>Property</SectionTitle>
           <div className="space-y-3">
             <TextInput id="address" label="Address" placeholder="Full address" />
+            <TextInput id="listing" label="Listing URL" placeholder="https://..." />
             <div className="grid grid-cols-2 gap-3">
               <TextInput id="rent" label="Weekly rent ($)" placeholder="380" />
               <TextInput id="suburb" label="Suburb" placeholder="Surry Hills" />
