@@ -27,14 +27,14 @@ export const fields: Field[] = [
   {id: "uniWalk", label: "Uni🚶", placeholder: "in minutes"},
   {id: "workPT", label: "Work🚍", placeholder: "in minutes"},
   {id: "workWalk", label: "Work🚶", placeholder: "in minutes"},
-  {id: "miscPT", label: "Misc🚍", placeholder: "in minutes"},
+
   {id: "train", label: "🚍 station (min.)", placeholder: "in minutes"},
   {id: "coles", label: "Coles (min.)", placeholder: "in minutes"},
   {id: "woolies", label: "Woolies (min.)", placeholder: "in minutes"},
   {id: "aldi", label: "ALDI (min.)", placeholder: "in minutes"},
-  {id: "7eleven", label: "7-eleven (min.)", placeholder: "in minutes"},
+
   {id: "gyg", label: "GYG (min.)", placeholder: "in minutes"},
-  {id: "broadway", label: "Broadway (min.)", placeholder: "in minutes"},
+  {id: "shoppingCenter", label: "Shopping centre (min.)", placeholder: "in minutes"},
   {id: "size", label: "Size offset", placeholder: "From -5 to 5"},
   {id: "convenience", label: "Offset", placeholder: "Offset"},
   {id: "isEnsuite", label: "Ensuite?", dataType: "checkbox"},
@@ -55,9 +55,9 @@ export type Entry = {
   bedrooms?: string,
   bathrooms?: string,
   carParks?: string,
-  "7eleven"?: string,
+
   aldi?: string,
-  broadway?: string,
+  shoppingCenter?: string,
   train?: string,
   coles?: string,
   convenience?: string,
@@ -71,7 +71,10 @@ export type Entry = {
   isRented?: boolean,
   isSharehouse?: boolean,
   isInspected?: boolean,
-  miscPT?: string,
+  hasAirCon?: boolean,
+  isPetsAllowed?: boolean,
+  uniDrive?: string,
+  workDrive?: string,
   rent: string,
   size?: string,
   uniPT?: string,
@@ -202,6 +205,8 @@ function AddEntryForm(props: FormProps) {
             <Toggle id="isKitchenPrivate" label="Private kitchen" />
             <Toggle id="isFurnished" label="Furnished" />
             <Toggle id="isSharehouse" label="Sharehouse" />
+            <Toggle id="hasAirCon" label="Air conditioning" />
+            <Toggle id="isPetsAllowed" label="Pets allowed" />
             <Toggle id="isRented" label="Already rented" />
           </div>
         </section>
@@ -222,9 +227,10 @@ function AddEntryForm(props: FormProps) {
           <div className="grid grid-cols-2 gap-3">
             <TextInput id="uniPT" label="Uni — bus / train" placeholder="0" />
             <TextInput id="uniWalk" label="Uni — walking" placeholder="0" />
+            <TextInput id="uniDrive" label="Uni — driving" placeholder="0" />
             <TextInput id="workPT" label="Work — bus / train" placeholder="0" />
             <TextInput id="workWalk" label="Work — walking" placeholder="0" />
-            <TextInput id="miscPT" label="Misc transit" placeholder="0" />
+            <TextInput id="workDrive" label="Work — driving" placeholder="0" />
             <TextInput id="train" label="Train station" placeholder="0" />
           </div>
         </section>
@@ -236,9 +242,9 @@ function AddEntryForm(props: FormProps) {
             <TextInput id="coles" label="Coles" placeholder="0" />
             <TextInput id="woolies" label="Woolworths" placeholder="0" />
             <TextInput id="aldi" label="ALDI" placeholder="0" />
-            <TextInput id="7eleven" label="7-Eleven" placeholder="0" />
+
             <TextInput id="gyg" label="GYG" placeholder="0" />
-            <TextInput id="broadway" label="Broadway" placeholder="0" />
+            <TextInput id="shoppingCenter" label="Shopping centre" placeholder="0" />
           </div>
         </section>
 

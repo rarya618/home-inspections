@@ -48,6 +48,8 @@ function PropertyCard({ entry, onEdit, onDelete, onClick }: {
   if (entry.isKitchenPrivate) features.push("🍳");
   if (entry.isFurnished)      features.push("🛋️");
   if (entry.isSharehouse)     features.push("👥");
+  if (entry.hasAirCon)        features.push("❄️");
+  if (entry.isPetsAllowed)    features.push("🐾");
   if (entry.hasInternet)      features.push("📶");
   if (entry.hasElectricity)   features.push("⚡");
   if (entry.hasWater)         features.push("💧");

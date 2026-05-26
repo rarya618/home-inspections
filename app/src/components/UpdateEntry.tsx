@@ -146,6 +146,8 @@ function UpdateEntryForm(props: FormProps) {
               <Toggle id="isKitchenPrivate" label="Private kitchen" defaultChecked={data.isKitchenPrivate} />
               <Toggle id="isFurnished" label="Furnished" defaultChecked={data.isFurnished} />
               <Toggle id="isSharehouse" label="Sharehouse" defaultChecked={data.isSharehouse} />
+              <Toggle id="hasAirCon" label="Air conditioning" defaultChecked={data.hasAirCon} />
+              <Toggle id="isPetsAllowed" label="Pets allowed" defaultChecked={data.isPetsAllowed} />
               <Toggle id="isRented" label="Already rented" defaultChecked={data.isRented} />
             </div>
           </section>
@@ -166,9 +168,10 @@ function UpdateEntryForm(props: FormProps) {
             <div className="grid grid-cols-2 gap-3">
               <TextInput id="uniPT" label="Uni — bus / train" placeholder="0" defaultValue={data.uniPT} />
               <TextInput id="uniWalk" label="Uni — walking" placeholder="0" defaultValue={data.uniWalk} />
+              <TextInput id="uniDrive" label="Uni — driving" placeholder="0" defaultValue={data.uniDrive} />
               <TextInput id="workPT" label="Work — bus / train" placeholder="0" defaultValue={data.workPT} />
               <TextInput id="workWalk" label="Work — walking" placeholder="0" defaultValue={data.workWalk} />
-              <TextInput id="miscPT" label="Misc transit" placeholder="0" defaultValue={data.miscPT} />
+              <TextInput id="workDrive" label="Work — driving" placeholder="0" defaultValue={data.workDrive} />
               <TextInput id="train" label="Train station" placeholder="0" defaultValue={data.train} />
             </div>
           </section>
@@ -180,9 +183,9 @@ function UpdateEntryForm(props: FormProps) {
               <TextInput id="coles" label="Coles" placeholder="0" defaultValue={data.coles} />
               <TextInput id="woolies" label="Woolworths" placeholder="0" defaultValue={data.woolies} />
               <TextInput id="aldi" label="ALDI" placeholder="0" defaultValue={data.aldi} />
-              <TextInput id="7eleven" label="7-Eleven" placeholder="0" defaultValue={data["7eleven"]} />
+
               <TextInput id="gyg" label="GYG" placeholder="0" defaultValue={data.gyg} />
-              <TextInput id="broadway" label="Broadway" placeholder="0" defaultValue={data.broadway} />
+              <TextInput id="shoppingCenter" label="Shopping centre" placeholder="0" defaultValue={data.shoppingCenter} />
             </div>
           </section>
 

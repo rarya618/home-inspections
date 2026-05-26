@@ -236,6 +236,33 @@ const getTrainFactor = (minutesTaken: number) => {
   return -100
 }
 
+// returns the driving factor for property
+const getDrivingFactor = (minutesTaken: number) => {
+  if (minutesTaken == 0) {
+    return -50
+  }
+  if (minutesTaken <= 10) {
+    return 150
+  }
+  if (minutesTaken <= 15) {
+    return 120
+  }
+  if (minutesTaken <= 20) {
+    return 90
+  }
+  if (minutesTaken <= 25) {
+    return 60
+  }
+  if (minutesTaken <= 30) {
+    return 30
+  }
+  if (minutesTaken <= 40) {
+    return 0
+  }
+
+  return -50
+}
+
 // returns the sharehouse factor for property
 const getInspectedFactor = (isInspected: boolean) => {
   if (isInspected)
@@ -292,11 +319,9 @@ const calculateScore = (entry: Entry) => {
     // add pt score
     let uniPTMinutes = entry.uniPT ? parseInt(entry.uniPT) : 0;
     let workPTMinutes = entry.workPT ? parseInt(entry.workPT) : 0;
-    let miscPTMinutes = entry.miscPT ? parseInt(entry.miscPT) : 0;
 
-    score += getPTFactor(uniPTMinutes, false) 
+    score += getPTFactor(uniPTMinutes, false)
         + getPTFactor(workPTMinutes, false)
-        + getPTFactor(miscPTMinutes, true)
 
     // add walking score
     let uniWalkMinutes = entry.uniWalk ? parseInt(entry.uniWalk) : 0;
@@ -305,16 +330,22 @@ const calculateScore = (entry: Entry) => {
     score += getWalkingFactor(uniWalkMinutes)
       + getWalkingFactor(workWalkMinutes)
 
+    // add driving score
+    let uniDriveMinutes = entry.uniDrive ? parseInt(entry.uniDrive) : 0;
+    let workDriveMinutes = entry.workDrive ? parseInt(entry.workDrive) : 0;
+
+    score += getDrivingFactor(uniDriveMinutes)
+      + getDrivingFactor(workDriveMinutes)
+
     // add grocery score
     let colesMinutes = entry.coles ? parseInt(entry.coles) : 0
     let wooliesMinutes = entry.woolies ? parseInt(entry.woolies) : 0
     let aldiMinutes = entry.aldi ? parseInt(entry.aldi) : 0
-    let s7elevenMinutes = entry["7eleven"] ? parseInt(entry["7eleven"]) : 0
-
+    let shoppingCenterMinutes = entry.shoppingCenter ? parseInt(entry.shoppingCenter) : 0
     score += getGroceryFactor(colesMinutes)
       + getGroceryFactor(wooliesMinutes)
       + getGroceryFactor(aldiMinutes)
-      + getGroceryFactor(s7elevenMinutes)
+      + getGroceryFactor(shoppingCenterMinutes)
     
 
     // add train score
@@ -352,13 +383,34 @@ const calculateScore = (entry: Entry) => {
     let gygMinutes = entry.gyg ? parseInt(entry.gyg) : 0
     score += getGygFactor(gygMinutes)
 
+    // add bedrooms score (+150 per room above 1)
+    if (entry.bedrooms) {
+      const beds = parseInt(entry.bedrooms)
+      if (beds > 1) score += (beds - 1) * 150
+    }
+
+    // add bathrooms score (+100 per bathroom above 1)
+    if (entry.bathrooms) {
+      const baths = parseInt(entry.bathrooms)
+      if (baths > 1) score += (baths - 1) * 100
+    }
+
+    // add car parks score
+    if (entry.carParks && parseInt(entry.carParks) >= 1) score += 150
+
+    // add air con score
+    if (entry.hasAirCon) score += 150
+
+    // add pets allowed score
+    if (entry.isPetsAllowed) score += 100
+
     // add offsets
     if (entry.size)
       score += parseInt(entry.size) * 100
-    
+
     if (entry.convenience)
       score += parseInt(entry.convenience) * 100
-    
+
     return score
 }
 

@@ -71,10 +71,11 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
 
   useTitle(entry.address || "Property");
 
-  const hasTransit = entry.uniPT || entry.uniWalk || entry.workPT || entry.workWalk || entry.miscPT || entry.train;
-  const hasNearby  = entry.coles || entry.woolies || entry.aldi || entry["7eleven"] || entry.gyg || entry.broadway;
+  const hasTransit = entry.uniPT || entry.uniWalk || entry.uniDrive || entry.workPT || entry.workWalk || entry.workDrive || entry.train;
+  const hasNearby  = entry.coles || entry.woolies || entry.aldi || entry.gyg || entry.shoppingCenter;
   const hasFeatures = entry.isEnsuite !== undefined || entry.isKitchenPrivate !== undefined ||
-                      entry.isFurnished !== undefined || entry.isSharehouse !== undefined;
+                      entry.isFurnished !== undefined || entry.isSharehouse !== undefined ||
+                      entry.hasAirCon !== undefined || entry.isPetsAllowed !== undefined;
   const hasUtils   = entry.hasElectricity !== undefined || entry.hasWater !== undefined || entry.hasInternet !== undefined;
   const hasOffsets = (entry.size && entry.size !== "0") || (entry.convenience && entry.convenience !== "0");
 
@@ -161,6 +162,8 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
               <FeatureChip emoji="🍳" label="Private kitchen" value={entry.isKitchenPrivate} />
               <FeatureChip emoji="🛋️" label="Furnished"       value={entry.isFurnished} />
               <FeatureChip emoji="🏠" label="Whole place"     value={entry.isSharehouse === false ? true : entry.isSharehouse === true ? false : undefined} />
+              <FeatureChip emoji="❄️" label="Air con"         value={entry.hasAirCon} />
+              <FeatureChip emoji="🐾" label="Pets allowed"    value={entry.isPetsAllowed} />
             </div>
           </>
         )}
@@ -184,9 +187,11 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
             <div className="grid grid-cols-2 gap-2">
               <StatTile emoji="🚍" label="Uni — bus/train"  value={entry.uniPT} />
               <StatTile emoji="🚶" label="Uni — walking"    value={entry.uniWalk} />
+              <StatTile emoji="🚗" label="Uni — driving"    value={entry.uniDrive} />
               <StatTile emoji="🚍" label="Work — bus/train" value={entry.workPT} />
               <StatTile emoji="🚶" label="Work — walking"   value={entry.workWalk} />
-              <StatTile emoji="🚍" label="Misc transit"     value={entry.miscPT} />
+              <StatTile emoji="🚗" label="Work — driving"   value={entry.workDrive} />
+
               <StatTile emoji="🚉" label="Train station"    value={entry.train} />
             </div>
           </>
@@ -200,9 +205,9 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
               <StatTile emoji="🛒" label="Coles"          value={entry.coles} />
               <StatTile emoji="🛒" label="Woolworths"     value={entry.woolies} />
               <StatTile emoji="🛒" label="ALDI"           value={entry.aldi} />
-              <StatTile emoji="🏪" label="7-Eleven"       value={entry["7eleven"]} />
+
               <StatTile emoji="🌮" label="GYG"            value={entry.gyg} />
-              <StatTile emoji="🏬" label="Broadway"       value={entry.broadway} />
+              <StatTile emoji="🏬" label="Shopping centre" value={entry.shoppingCenter} />
             </div>
           </>
         )}
