@@ -2,7 +2,12 @@ import { Entry } from "./AddEntry";
 import { calculateScore, calculateScoreBreakdown } from "./Score";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft, faBed, faShower, faCar, faUtensils, faCouch, faWind,
+  faPaw, faWarehouse, faWifi, faBolt, faDroplet, faBus, faPersonWalking,
+  faBasketShopping, faBurger, faStore, faCircleCheck,
+} from "@fortawesome/free-solid-svg-icons";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useTitle } from "../App";
 
 type Props = {
@@ -44,11 +49,11 @@ const getScoreMeta = (score: number) => {
   };
 };
 
-function StatTile({ emoji, label, value }: { emoji: string, label: string, value: string | undefined }) {
+function StatTile({ icon, label, value }: { icon: IconDefinition, label: string, value: string | undefined }) {
   if (!value || value === "0" || value === "") return null;
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
-      <span className="text-xl leading-none">{emoji}</span>
+      <FontAwesomeIcon icon={icon} className="text-gray-400 dark:text-gray-500 text-base w-4 shrink-0" />
       <div className="min-w-0">
         <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{label}</p>
         <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">{value}min</p>
@@ -57,7 +62,7 @@ function StatTile({ emoji, label, value }: { emoji: string, label: string, value
   );
 }
 
-function FeatureChip({ emoji, label, value }: { emoji: string, label: string, value: boolean | undefined }) {
+function FeatureChip({ icon, label, value }: { icon: IconDefinition, label: string, value: boolean | undefined }) {
   if (value === undefined) return null;
   return (
     <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
@@ -65,7 +70,7 @@ function FeatureChip({ emoji, label, value }: { emoji: string, label: string, va
         ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-100 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400"
         : "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 text-gray-400 dark:text-gray-600 line-through"
     }`}>
-      <span className="text-base leading-none">{emoji}</span>
+      <FontAwesomeIcon icon={icon} className="w-3.5 shrink-0" />
       {label}
     </div>
   );
@@ -77,6 +82,11 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+const getSuburb = (address: string): string => {
+  const match = address.match(/,\s*([^,]+?)\s*(?:,\s*NSW\b|\s+NSW\b)/i)
+  return match ? match[1].trim() : ""
+}
+
 export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
   const score = entry.score ?? calculateScore(entry);
   const meta = getScoreMeta(score);
@@ -86,8 +96,8 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
 
   const hasTransit = entry.uniPT || entry.uniWalk || entry.uniDrive || entry.workPT || entry.workWalk || entry.workDrive || entry.trainWalk || entry.trainPT || entry.trainDrive;
   const hasNearby  = entry.coles || entry.woolies || entry.aldi || entry.gyg || entry.shoppingCenter;
-  const hasFeatures = entry.isEnsuite !== undefined || entry.isKitchenPrivate !== undefined ||
-                      entry.isFurnished !== undefined || entry.isSharehouse !== undefined ||
+  const hasFeatures = entry.isKitchenPrivate !== undefined ||
+                      entry.isFurnished !== undefined ||
                       entry.hasAirCon !== undefined || entry.isPetsAllowed !== undefined;
   const hasUtils   = entry.hasElectricity !== undefined || entry.hasWater !== undefined || entry.hasInternet !== undefined;
   const hasOffsets = (entry.size && entry.size !== "0") || (entry.convenience && entry.convenience !== "0");
@@ -120,13 +130,15 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {entry.isInspected && (
-              <p className="text-xs font-bold tracking-widest uppercase text-white/70 mb-2">✓ Inspected</p>
+              <p className="text-xs font-bold tracking-tight uppercase text-white/70 mb-2 flex items-center gap-1.5">
+                <FontAwesomeIcon icon={faCircleCheck} className="text-xs" /> Inspected
+              </p>
             )}
             <h1 className="text-2xl font-extrabold text-white leading-tight break-words drop-shadow-sm">
               {entry.address || "Unknown address"}
             </h1>
-            {entry.suburb && (
-              <p className="text-sm text-white/70 mt-1">{entry.suburb}</p>
+            {getSuburb(entry.address || "") && (
+              <p className="text-sm text-white/70 mt-1">{getSuburb(entry.address || "")}</p>
             )}
             {entry.listing && (
               <a
@@ -160,17 +172,17 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
           <div className="flex gap-4 mt-6">
             {entry.bedrooms && (
               <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <span>🛏</span> {entry.bedrooms} bed
+                <FontAwesomeIcon icon={faBed} className="w-4 text-gray-400" /> {entry.bedrooms} bed
               </div>
             )}
             {entry.bathrooms && (
               <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <span>🚿</span> {entry.bathrooms} bath
+                <FontAwesomeIcon icon={faShower} className="w-4 text-gray-400" /> {entry.bathrooms} bath
               </div>
             )}
             {entry.carParks && entry.carParks !== "0" && (
               <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <span>🚗</span> {entry.carParks} park
+                <FontAwesomeIcon icon={faCar} className="w-4 text-gray-400" /> {entry.carParks} park
               </div>
             )}
           </div>
@@ -183,13 +195,11 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
             <div>
               <SectionTitle>Property</SectionTitle>
               <div className="grid grid-cols-2 gap-2">
-                <FeatureChip emoji="🚿" label="Ensuite"         value={entry.isEnsuite} />
-                <FeatureChip emoji="🍳" label="Private kitchen" value={entry.isKitchenPrivate} />
-                <FeatureChip emoji="🛋️" label="Furnished"       value={entry.isFurnished} />
-                <FeatureChip emoji="🏠" label="Whole place"     value={entry.isSharehouse === false ? true : entry.isSharehouse === true ? false : undefined} />
-                <FeatureChip emoji="❄️" label="Air con"         value={entry.hasAirCon} />
-                <FeatureChip emoji="🐾" label="Pets allowed"    value={entry.isPetsAllowed} />
-              <FeatureChip emoji="🏠" label="Garage"          value={entry.hasGarage} />
+                <FeatureChip icon={faUtensils}  label="Private kitchen" value={entry.isKitchenPrivate} />
+                <FeatureChip icon={faCouch}     label="Furnished"       value={entry.isFurnished} />
+                <FeatureChip icon={faWind}      label="Air con"         value={entry.hasAirCon} />
+                <FeatureChip icon={faPaw}       label="Pets allowed"    value={entry.isPetsAllowed} />
+                <FeatureChip icon={faWarehouse}  label="Garage"          value={entry.hasGarage} />
               </div>
             </div>
           )}
@@ -199,9 +209,9 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
             <div>
               <SectionTitle>Utilities included</SectionTitle>
               <div className="grid grid-cols-3 gap-2">
-                <FeatureChip emoji="⚡" label="Electricity" value={entry.hasElectricity} />
-                <FeatureChip emoji="💧" label="Water"       value={entry.hasWater} />
-                <FeatureChip emoji="📶" label="Internet"    value={entry.hasInternet} />
+                <FeatureChip icon={faBolt}    label="Electricity" value={entry.hasElectricity} />
+                <FeatureChip icon={faDroplet} label="Water"       value={entry.hasWater} />
+                <FeatureChip icon={faWifi}    label="Internet"    value={entry.hasInternet} />
               </div>
             </div>
           )}
@@ -211,13 +221,13 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
             <div>
               <SectionTitle>Transit</SectionTitle>
               <div className="grid grid-cols-2 gap-2">
-                <StatTile emoji="🚍" label="Uni — bus/train"  value={entry.uniPT} />
-                <StatTile emoji="🚗" label="Uni — driving"    value={entry.uniDrive} />
-                <StatTile emoji="🚍" label="Work — bus/train" value={entry.workPT} />
-                <StatTile emoji="🚗" label="Work — driving"   value={entry.workDrive} />
-                <StatTile emoji="🚶" label="Train — walking"   value={entry.trainWalk} />
-                <StatTile emoji="🚍" label="Train — bus/train" value={entry.trainPT} />
-                <StatTile emoji="🚗" label="Train — driving"  value={entry.trainDrive} />
+                <StatTile icon={faBus}           label="Uni — bus/train"  value={entry.uniPT} />
+                <StatTile icon={faCar}           label="Uni — driving"    value={entry.uniDrive} />
+                <StatTile icon={faBus}           label="Work — bus/train" value={entry.workPT} />
+                <StatTile icon={faCar}           label="Work — driving"   value={entry.workDrive} />
+                <StatTile icon={faPersonWalking} label="Train — walking"  value={entry.trainWalk} />
+                <StatTile icon={faBus}           label="Train — bus/train" value={entry.trainPT} />
+                <StatTile icon={faCar}           label="Train — driving"  value={entry.trainDrive} />
               </div>
             </div>
           )}
@@ -227,11 +237,11 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
             <div>
               <SectionTitle>Nearby</SectionTitle>
               <div className="grid grid-cols-2 gap-2">
-                <StatTile emoji="🛒" label="Coles"           value={entry.coles} />
-                <StatTile emoji="🛒" label="Woolworths"      value={entry.woolies} />
-                <StatTile emoji="🛒" label="ALDI"            value={entry.aldi} />
-                <StatTile emoji="🌮" label="GYG"             value={entry.gyg} />
-                <StatTile emoji="🏬" label="Shopping centre" value={entry.shoppingCenter} />
+                <StatTile icon={faBasketShopping} label="Coles"           value={entry.coles} />
+                <StatTile icon={faBasketShopping} label="Woolworths"      value={entry.woolies} />
+                <StatTile icon={faBasketShopping} label="ALDI"            value={entry.aldi} />
+                <StatTile icon={faBurger}         label="GYG"             value={entry.gyg} />
+                <StatTile icon={faStore}          label="Shopping centre" value={entry.shoppingCenter} />
               </div>
             </div>
           )}
