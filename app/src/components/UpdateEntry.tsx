@@ -14,7 +14,7 @@ type FormProps = {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400 dark:text-gray-600 mb-3">{children}</h3>
+    <h3 className="text-xs font-bold tracking-tight uppercase text-gray-400 dark:text-gray-600 mb-3">{children}</h3>
   );
 }
 
@@ -140,10 +140,7 @@ function UpdateEntryForm(props: FormProps) {
             <div className="space-y-3">
               <TextInput id="address" label="Address" placeholder="Full address" defaultValue={data.address} />
               <TextInput id="listing" label="Listing URL" placeholder="https://..." defaultValue={data.listing} />
-              <div className="grid grid-cols-2 gap-3">
-                <TextInput id="rent" label="Weekly rent ($)" placeholder="380" defaultValue={data.rent} />
-                <TextInput id="suburb" label="Suburb" placeholder="Surry Hills" defaultValue={data.suburb} />
-              </div>
+              <TextInput id="rent" label="Weekly rent ($)" placeholder="380" defaultValue={data.rent} />
               <div className="grid grid-cols-3 gap-3">
                 <TextInput id="bedrooms" label="Bedrooms" placeholder="2" defaultValue={data.bedrooms} />
                 <TextInput id="bathrooms" label="Bathrooms" placeholder="1" defaultValue={data.bathrooms} />
@@ -157,10 +154,8 @@ function UpdateEntryForm(props: FormProps) {
             <SectionTitle>Features</SectionTitle>
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
               <Toggle id="isInspected" label="Inspected" defaultChecked={data.isInspected} />
-              <Toggle id="isEnsuite" label="Ensuite bathroom" defaultChecked={data.isEnsuite} />
               <Toggle id="isKitchenPrivate" label="Private kitchen" defaultChecked={data.isKitchenPrivate} />
               <Toggle id="isFurnished" label="Furnished" defaultChecked={data.isFurnished} />
-              <Toggle id="isSharehouse" label="Sharehouse" defaultChecked={data.isSharehouse} />
               <Toggle id="hasAirCon" label="Air conditioning" defaultChecked={data.hasAirCon} />
               <Toggle id="isPetsAllowed" label="Pets allowed" defaultChecked={data.isPetsAllowed} />
               <Toggle id="hasGarage" label="Garage" defaultChecked={data.hasGarage} />
