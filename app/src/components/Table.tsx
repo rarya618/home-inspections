@@ -173,8 +173,8 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>
           )}
         </div>
-        <div className={`${meta.scoreBg} ${meta.scoreText} rounded-md px-3 py-1.5 text-center`}>
-          <p className="text-xl font-extrabold tabular-nums leading-none">{score}</p>
+        <div className={`${meta.scoreBg} ${meta.scoreText} rounded-full px-3 py-1.5 text-center`}>
+          <p className="text-base font-bold tabular-nums leading-none tracking-tight">{score}</p>
         </div>
       </div>
 
@@ -240,14 +240,13 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
   const beds = entry.bedrooms ? parseInt(entry.bedrooms) : 1;
   const ppRent = beds > 1 ? Math.round(parseInt(entry.rent) / beds) : null;
 
-  const transitVal = transitMode === 'pt'
-    ? (entry.uniPT || entry.workPT || null)
-    : (entry.uniDrive || entry.workDrive || null);
-  const transitLabel = transitMode === 'pt' ? 'Uni PT' : 'Uni drive';
+  const uniVal  = transitMode === 'pt' ? (entry.uniPT  || null) : (entry.uniDrive  || null);
+  const workVal = transitMode === 'pt' ? (entry.workPT || null) : (entry.workDrive || null);
+  const transitLabel = transitMode === 'pt' ? 'PT' : 'Drive';
 
   return (
     <div
-      className={`relative flex items-center gap-3 px-4 py-2 border-l-4 ${meta.border} bg-white dark:bg-gray-900 border-b border-b-gray-100 dark:border-b-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors cursor-pointer first:rounded-t-lg last:rounded-b-lg last:border-b-0`}
+      className={`relative flex items-center gap-3 px-4 py-2 border-l-4 ${meta.border} bg-white dark:bg-gray-900 border-b border-b-gray-100 dark:border-b-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors cursor-pointer first:rounded-t last:rounded-b last:border-b-0`}
       onClick={onClick}
       onContextMenu={e => { e.preventDefault(); openMenu(e.clientX, e.clientY); }}
     >
@@ -263,14 +262,18 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
       </div>
 
       {/* Transit */}
-      <div className="hidden sm:flex flex-col items-end w-16 shrink-0">
-        {transitVal
-          ? <>
-              <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums">{transitVal}<span className="text-xs font-normal text-gray-400 ml-0.5">min</span></span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">{transitLabel}</span>
-            </>
-          : <span className="text-xs text-gray-300 dark:text-gray-700">—</span>
-        }
+      <div className="hidden sm:flex gap-4 shrink-0">
+        {[{ val: uniVal, label: `Uni ${transitLabel}` }, { val: workVal, label: `Work ${transitLabel}` }].map(({ val, label }) => (
+          <div key={label} className="flex flex-col items-end w-14">
+            {val
+              ? <>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums">{val}<span className="text-xs font-normal text-gray-400 ml-0.5">min</span></span>
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500">{label}</span>
+                </>
+              : <span className="text-xs text-gray-300 dark:text-gray-700">—</span>
+            }
+          </div>
+        ))}
       </div>
 
       {/* Rent */}
@@ -280,8 +283,8 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
       </div>
 
       {/* Score */}
-      <div className={`w-12 shrink-0 ml-2 ${meta.scoreBg} ${meta.scoreText} rounded-md px-2 py-1 text-center`}>
-        <p className="text-sm font-extrabold tabular-nums leading-none">{score}</p>
+      <div className={`shrink-0 ml-2 ${meta.scoreBg} ${meta.scoreText} rounded-full px-2.5 py-1 text-center`}>
+        <p className="text-sm font-bold tabular-nums leading-none tracking-tight">{score}</p>
       </div>
 
       {/* Menu button */}
@@ -386,8 +389,8 @@ function Table(props: Props) {
       <div className="space-y-6 pb-24">
         {groups.map(({ suburb, entries }) => (
           <div key={suburb}>
-            <h2 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-2 px-0.5">{suburb}</h2>
-            <div className="rounded-lg border border-gray-100 dark:border-gray-800">
+            <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-0">{suburb}</h2>
+            <div className="rounded border border-gray-100 dark:border-gray-800">
               {entries.map(entry => (
                 <ListRow
                   key={entry.id}
@@ -409,7 +412,7 @@ function Table(props: Props) {
     <div className="space-y-8 pb-24">
       {groups.map(({ suburb, entries }) => (
         <div key={suburb}>
-          <h2 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-3 px-0.5">{suburb}</h2>
+          <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-1">{suburb}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {entries.map(entry => (
               <PropertyCard

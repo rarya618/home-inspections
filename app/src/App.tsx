@@ -25,7 +25,7 @@ export function useTitle(title: string) {
 export function Button(text: string, onclick?: () => void) {
   return (
     <button
-      className="fixed bottom-8 right-8 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-5 py-3 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-150"
+      className="fixed bottom-8 right-8 z-30 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-5 py-3 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-150"
       onClick={onclick}>
       <span className="text-lg leading-none">+</span>
       {text}
@@ -86,11 +86,10 @@ function App() {
         />
       )
       : (<>
-      <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800 px-4 py-4">
+      <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800 px-4 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">HouseX</h1>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Property search tracker</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">

@@ -270,7 +270,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   if (entry.carParks && parseInt(entry.carParks) >= 1) add("Car parks", 150)
   if (entry.hasAirCon) add("Air con", 150)
   if (entry.isPetsAllowed) add("Pets allowed", 100)
-  if (entry.hasGarage) add("Garage", 250)
+  if (entry.hasGarage) add("Garage", 100)
   if (entry.hasLawn) add("Lawn (maintenance)", -150)
   if (entry.size)        add("Size",        parseInt(entry.size) * 100)
   if (entry.convenience) add("Convenience", parseInt(entry.convenience) * 100)
@@ -366,7 +366,7 @@ const calculateScore = (entry: Entry) => {
     if (entry.isPetsAllowed) score += 100
 
     // add garage score
-    if (entry.hasGarage) score += 250
+    if (entry.hasGarage) score += 100
 
     // lawn penalty
     if (entry.hasLawn) score -= 150
