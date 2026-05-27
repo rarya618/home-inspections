@@ -25,7 +25,7 @@ type Props = {
   changeHandler: () => void,
   onCardClick: (entry: Entry) => void,
   transitMode: 'pt' | 'drive',
-  viewMode: 'cards' | 'list',
+  viewMode: 'cards' | 'list',  // 'map' is handled above in App and never passed here
 }
 
 const getScoreMeta = (score: number) => {

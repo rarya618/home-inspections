@@ -1,11 +1,11 @@
 import { Entry } from "./AddEntry";
 
 // returns the rent factor for property
-// neutral at $350/pp; cheaper = +2/dollar, dearer = -3/dollar, floor -500
+// neutral at $350/pp; cheaper = +3/dollar, dearer = -4/dollar, floor -600
 const getRentFactor = (rent: number) => {
   const delta = 350 - rent
-  if (delta >= 0) return Math.round(delta * 2)
-  else return Math.max(Math.round(delta * 3), -500)
+  if (delta >= 0) return Math.round(delta * 3)
+  else return Math.max(Math.round(delta * 4), -600)
 }
 
 // returns the public transport factor for property
@@ -15,12 +15,11 @@ const getPTFactor = (minutesTaken: number, _isMisc: boolean) => {
   if (minutesTaken <= 20) return 160
   if (minutesTaken <= 25) return 120
   if (minutesTaken <= 30) return 80
-  if (minutesTaken <= 35) return 50
-  if (minutesTaken <= 40) return 20
-  if (minutesTaken <= 45) return 0
-  if (minutesTaken <= 55) return -50
-  if (minutesTaken <= 65) return -100
-  return -180
+  if (minutesTaken <= 35) return 40
+  if (minutesTaken <= 40) return 0
+  if (minutesTaken <= 50) return -20
+  if (minutesTaken <= 60) return -40
+  return -60
 }
 
 // returns the walking factor for property
@@ -109,6 +108,14 @@ const getCohabitationPenalty = (beds: number) => {
   return -Math.round(50 * Math.pow(2, beds - 2))
 }
 
+// penalty for needing to find housemates — kicks in at 3+ beds
+const getHousematePenalty = (beds: number) => {
+  if (beds <= 2) return 0
+  if (beds === 3) return -150
+  if (beds === 4) return -250
+  return -350
+}
+
 
 // returns the driving factor for property
 const getDrivingFactor = (minutesTaken: number) => {
@@ -118,10 +125,10 @@ const getDrivingFactor = (minutesTaken: number) => {
   if (minutesTaken <= 20) return 90
   if (minutesTaken <= 25) return 60
   if (minutesTaken <= 30) return 30
-  if (minutesTaken <= 40) return 10
-  if (minutesTaken <= 45) return 0
-  if (minutesTaken <= 55) return -30
-  return -80
+  if (minutesTaken <= 40) return 0
+  if (minutesTaken <= 50) return -15
+  if (minutesTaken <= 60) return -30
+  return -45
 }
 
 // returns the gyg factor for property
@@ -152,35 +159,36 @@ const getGygFactor = (minutesTaken: number) => {
 }
 
 
-const getTrainStationPTFactor = (mins: number): number => {
-  if (mins == 0) return 0
-  if (mins <= 5)  return 200
-  if (mins <= 10) return 120
-  if (mins <= 15) return 40
-  if (mins <= 20) return -200
-  if (mins <= 25) return -400
-  return -600
-}
-
-const getTrainStationDriveFactor = (mins: number): number => {
-  if (mins == 0) return 0
-  if (mins <= 5)  return 200
-  if (mins <= 10) return 120
-  if (mins <= 15) return 40
-  if (mins <= 20) return -200
-  if (mins <= 25) return -400
-  return -600
-}
-
+// neutral at 20 min walk; ±150 range
 const getTrainStationWalkFactor = (mins: number): number => {
   if (mins == 0) return 0
-  if (mins <= 5)  return 200
-  if (mins <= 10) return 120
-  if (mins <= 15) return 40
-  if (mins <= 20) return -60
-  if (mins <= 25) return -140
-  if (mins <= 30) return -250
-  return -400
+  if (mins <= 5)  return 150
+  if (mins <= 10) return 100
+  if (mins <= 15) return 50
+  if (mins <= 20) return 0
+  if (mins <= 25) return -50
+  if (mins <= 30) return -100
+  return -150
+}
+
+// neutral at 30 min PT; ±100 range
+const getTrainStationPTFactor = (mins: number): number => {
+  if (mins == 0) return 0
+  if (mins <= 10) return 100
+  if (mins <= 20) return 50
+  if (mins <= 30) return 0
+  if (mins <= 40) return -50
+  return -100
+}
+
+// neutral at 15 min drive; ±100 range
+const getTrainStationDriveFactor = (mins: number): number => {
+  if (mins == 0) return 0
+  if (mins <= 5)  return 100
+  if (mins <= 10) return 50
+  if (mins <= 15) return 0
+  if (mins <= 20) return -50
+  return -100
 }
 
 const getTrainStationScore = (ptMins: number, walkMins: number, driveMins: number): number => {
@@ -194,13 +202,17 @@ const getTrainStationScore = (ptMins: number, walkMins: number, driveMins: numbe
 }
 
 const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): number => {
+  const walkable = walkMins > 0 && walkMins <= 30
   const modes: { score: number; weight: number }[] = []
-  if (ptMins > 0)    modes.push({ score: getPTFactor(ptMins, false),   weight: 0.4 })
-  if (walkMins > 0)  modes.push({ score: getWalkingFactor(walkMins),   weight: 0.3 })
-  if (driveMins > 0) modes.push({ score: getDrivingFactor(driveMins),  weight: 0.3 })
+  if (ptMins > 0)   modes.push({ score: getPTFactor(ptMins, false),  weight: 0.4 })
+  if (walkable)     modes.push({ score: getWalkingFactor(walkMins),  weight: 0.4 })
+  if (driveMins > 0) modes.push({ score: getDrivingFactor(driveMins), weight: 0.3 })
   if (modes.length === 0) return 0
   const totalWeight = modes.reduce((s, m) => s + m.weight, 0)
-  return modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
+  const blendScore = modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
+  // bonus for walkability — scales down with distance
+  const walkBonus = walkable ? Math.round(75 * (1 - (walkMins - 1) / 30)) : 0
+  return blendScore + walkBonus
 }
 
 export type ScoreComponent = { label: string; value: number }
@@ -221,12 +233,14 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   add("Rent (per person)", getRentFactor(rent))
 
   const uniPT    = entry.uniPT    ? parseInt(entry.uniPT)    : 0
+  const uniWalk  = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0
   const uniDrive = entry.uniDrive ? parseInt(entry.uniDrive) : 0
-  add("Uni commute", getCommuteScore(uniPT, 0, uniDrive))
+  add("Uni commute", getCommuteScore(uniPT, uniWalk, uniDrive))
 
   const workPT    = entry.workPT    ? parseInt(entry.workPT)    : 0
+  const workWalk  = entry.workWalk  ? parseInt(entry.workWalk)  : 0
   const workDrive = entry.workDrive ? parseInt(entry.workDrive) : 0
-  add("Work commute", getCommuteScore(workPT, 0, workDrive))
+  add("Work commute", getCommuteScore(workPT, workWalk, workDrive))
 
   const groceryTimes = [
     entry.coles         ? parseInt(entry.coles)         : 0,
@@ -246,6 +260,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   add("Private kitchen", getKitchenFactor(!!entry.isKitchenPrivate))
   add("Furnished", getFurnishedFactor(!!entry.isFurnished))
   add("Cohabitation overhead", getCohabitationPenalty(beds))
+  add("Finding housemates", getHousematePenalty(beds))
   add("GYG proximity", getGygFactor(entry.gyg ? parseInt(entry.gyg) : 0))
 
   if (beds > 1) {
@@ -297,13 +312,15 @@ const calculateScore = (entry: Entry) => {
     score += getRentFactor(rent)
 
     // add commute score (weighted blend per destination)
-    const uniPTMinutes    = entry.uniPT     ? parseInt(entry.uniPT)     : 0;
-    const uniDriveMinutes = entry.uniDrive  ? parseInt(entry.uniDrive)  : 0;
-    const workPTMinutes   = entry.workPT    ? parseInt(entry.workPT)    : 0;
-    const workDriveMinutes = entry.workDrive ? parseInt(entry.workDrive) : 0;
+    const uniPTMinutes     = entry.uniPT    ? parseInt(entry.uniPT)    : 0
+    const uniWalkMinutes   = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0
+    const uniDriveMinutes  = entry.uniDrive ? parseInt(entry.uniDrive) : 0
+    const workPTMinutes    = entry.workPT    ? parseInt(entry.workPT)    : 0
+    const workWalkMinutes  = entry.workWalk  ? parseInt(entry.workWalk)  : 0
+    const workDriveMinutes = entry.workDrive ? parseInt(entry.workDrive) : 0
 
-    score += getCommuteScore(uniPTMinutes, 0, uniDriveMinutes)
-    score += getCommuteScore(workPTMinutes, 0, workDriveMinutes)
+    score += getCommuteScore(uniPTMinutes, uniWalkMinutes, uniDriveMinutes)
+    score += getCommuteScore(workPTMinutes, workWalkMinutes, workDriveMinutes)
 
     // add grocery score (best single store only)
     const groceryTimes = [
@@ -335,6 +352,7 @@ const calculateScore = (entry: Entry) => {
 
     // cohabitation overhead — always applied, scales with bedrooms
     score += getCohabitationPenalty(beds)
+    score += getHousematePenalty(beds)
 
     // add gyg score
     let gygMinutes = entry.gyg ? parseInt(entry.gyg) : 0

@@ -23,7 +23,7 @@ export interface TransitTimes {
 
 let initialized = false
 
-const initMaps = async () => {
+export const initMaps = async () => {
   if (!initialized) {
     setOptions({ key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string })
     initialized = true
@@ -189,9 +189,11 @@ export const fetchTransitTimes = async (propertyAddress: string): Promise<Transi
 
     // Uni
     if (ptTimes[0]    != null) result.uniPT    = String(ptTimes[0])
+    if (walkTimes[0]  != null) result.uniWalk  = String(walkTimes[0])
     if (driveTimes[0] != null) result.uniDrive  = String(driveTimes[0])
     // Work
     if (ptTimes[1]    != null) result.workPT    = String(ptTimes[1])
+    if (walkTimes[1]  != null) result.workWalk  = String(walkTimes[1])
     if (driveTimes[1] != null) result.workDrive  = String(driveTimes[1])
     // Train station (index 2 if present)
     if (stationLocation) {

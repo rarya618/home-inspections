@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Table from './components/Table'
+import MapView from './components/MapView'
 import AddEntryForm from './components/AddEntry';
 import UpdateEntryForm from './components/UpdateEntry';
 import PropertyDetail from './components/PropertyDetail';
 import { Entry } from './components/AddEntry';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableCells, faList } from '@fortawesome/free-solid-svg-icons';
+import { faTableCells, faList, faMap } from '@fortawesome/free-solid-svg-icons';
 
 // set page title
 export function useTitle(title: string) {
@@ -41,7 +42,7 @@ function App() {
   const [currentEntry, setCurrentEntry] = useState("none")
   const [currentEntryData, setCurrentEntryData] = useState<Entry | null>(null)
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('list')
+  const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
 
   const changeAddFormDisplay = () => {
     toggleAddFormDisplay(!isAddFormDisplayed);
@@ -86,22 +87,24 @@ function App() {
         />
       )
       : (<>
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800 px-4 py-4">
+      <div className={`sticky top-0 z-20 px-4 py-4 transition-colors ${viewMode === 'map' ? '' : 'bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800'}`}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">HouseX</h1>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
-              <button
-                onClick={() => setTransitMode('pt')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'pt' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
-              >PT</button>
-              <button
-                onClick={() => setTransitMode('drive')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'drive' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
-              >Drive</button>
-            </div>
+            {viewMode !== 'map' && (
+              <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
+                <button
+                  onClick={() => setTransitMode('pt')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'pt' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                >PT</button>
+                <button
+                  onClick={() => setTransitMode('drive')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'drive' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                >Drive</button>
+              </div>
+            )}
             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
               <button
                 onClick={() => setViewMode('cards')}
@@ -111,20 +114,28 @@ function App() {
                 onClick={() => setViewMode('list')}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
               ><FontAwesomeIcon icon={faList} /></button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'map' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              ><FontAwesomeIcon icon={faMap} /></button>
             </div>
           </div>
         </div>
       </div>
-      <div className="px-4 pt-4">
-        <Table
-          currentEntry={currentEntry}
-          setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
-          changeHandler={changeUpdateFormDisplay}
-          onCardClick={openDetail}
-          transitMode={transitMode}
-          viewMode={viewMode}
-        />
-      </div>
+      {viewMode === 'map' ? (
+        <MapView onCardClick={openDetail} />
+      ) : (
+        <div className="px-4 pt-4">
+          <Table
+            currentEntry={currentEntry}
+            setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
+            changeHandler={changeUpdateFormDisplay}
+            onCardClick={openDetail}
+            transitMode={transitMode}
+            viewMode={viewMode}
+          />
+        </div>
+      )}
       {Button("Add entry", changeAddFormDisplay)}
       </>)
     }
