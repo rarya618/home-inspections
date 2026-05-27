@@ -195,33 +195,61 @@ function tryJsonLd() {
 function tryDom() {
   const result = {};
 
-  // Address — og:title or h1
-  const ogTitle = document.querySelector('meta[property="og:title"]')?.content
-    ?? document.querySelector('meta[name="og:title"]')?.content;
+  // ── Address ──────────────────────────────────────────────────────────────
+  const ogTitle = document.querySelector('meta[property="og:title"]')?.content;
   if (ogTitle) {
-    // Strip trailing " - Property for Rent" etc.
-    result.address = ogTitle.replace(/\s*[-–]\s*(property|house|apartment|unit).*$/i, '').trim();
+    result.address = ogTitle.replace(/\s*[-–|]\s*(property|house|apartment|unit|flat|studio|townhouse|villa|rent|sale|buy).*$/i, '').trim();
   }
   if (!result.address) {
     const h1 = document.querySelector('h1');
     if (h1) result.address = h1.textContent.trim();
   }
 
-  // Price — look for text matching $NNN per week / $NNN/week / $NNN pw
-  const bodyText = document.body.innerText;
-  const priceMatch = bodyText.match(/\$\s*([\d,]+)\s*(?:per\s*week|\/\s*week|pw\b)/i);
-  if (priceMatch) result.rent = priceMatch[1].replace(/,/g, '');
+  // ── Meta description — primary source for price + features on REA ─────────
+  const metaDesc = document.querySelector('meta[name="description"]')?.content
+                ?? document.querySelector('meta[property="og:description"]')?.content
+                ?? '';
+  console.log('[HouseX] meta description:', metaDesc);
 
-  // Beds / baths / parking — look for labeled values in the DOM
-  const allText = [...document.querySelectorAll('[data-testid], [class*="feature"], [class*="detail"], [class*="property-info"]')]
-    .map(el => el.innerText ?? '').join('\n');
+  if (metaDesc) {
+    const rentM = metaDesc.replace(/,/g, '').match(/\$\s*([\d]+)\s*(?:per\s*week|\/\s*w(?:eek)?|p\.?w\.?)/i);
+    if (rentM) result.rent = rentM[1];
 
-  const bedMatch  = allText.match(/(\d+)\s*(?:bed(?:room)?s?)\b/i);
-  const bathMatch = allText.match(/(\d+)\s*(?:bath(?:room)?s?)\b/i);
-  const parkMatch = allText.match(/(\d+)\s*(?:car\s*(?:space|park|garage)?s?|parking)\b/i);
-  if (bedMatch)  result.bedrooms  = bedMatch[1];
-  if (bathMatch) result.bathrooms = bathMatch[1];
-  if (parkMatch) result.carParks  = parkMatch[1];
+    const bedM  = metaDesc.match(/(\d+)\s*bed(?:room)?s?/i);
+    const bathM = metaDesc.match(/(\d+)\s*bath(?:room)?s?/i);
+    const carM  = metaDesc.match(/(\d+)\s*(?:car\s*(?:space|park|garage)?s?|parking\s*space)/i);
+    if (bedM)  result.bedrooms  = bedM[1];
+    if (bathM) result.bathrooms = bathM[1];
+    if (carM)  result.carParks  = carM[1];
+  }
+
+  // ── Price fallbacks ───────────────────────────────────────────────────────
+  if (!result.rent) {
+    const priceEl =
+      document.querySelector('[data-testid="listing-details__summary-title"]') ??
+      document.querySelector('[data-testid="price"]') ??
+      document.querySelector('[class*="price__"]') ??
+      document.querySelector('[class*="Price"]');
+    if (priceEl) {
+      const m = priceEl.textContent.replace(/,/g, '').match(/\$?\s*([\d]+)/);
+      if (m) result.rent = m[1];
+    }
+  }
+  if (!result.rent) {
+    const m = document.body.innerText.replace(/,/g, '').match(/\$\s*([\d]+)\s*(?:per\s*week|\/\s*w(?:eek)?|p\.?w\.?)/i);
+    if (m) result.rent = m[1];
+  }
+
+  // ── Feature fallbacks ─────────────────────────────────────────────────────
+  if (!result.bedrooms || !result.bathrooms) {
+    const bodyText = document.body.innerText;
+    const bedM  = bodyText.match(/\b(\d+)\s*bed(?:room)?s?\b/i);
+    const bathM = bodyText.match(/\b(\d+)\s*bath(?:room)?s?\b/i);
+    const carM  = bodyText.match(/\b(\d+)\s*(?:car\s*(?:space|park|garage)?s?)\b/i);
+    if (bedM  && !result.bedrooms)  result.bedrooms  = bedM[1];
+    if (bathM && !result.bathrooms) result.bathrooms = bathM[1];
+    if (carM  && !result.carParks)  result.carParks  = carM[1];
+  }
 
   console.log('[HouseX] DOM result:', result);
   return (result.address || result.rent) ? result : null;
@@ -230,7 +258,18 @@ function tryDom() {
 // ─── Extract & inject ──────────────────────────────────────────────────────
 
 function extractListingData() {
-  return tryNextData() || tryJsonLd() || tryDom();
+  // Run all methods and merge — later fields don't overwrite earlier ones
+  const results = [tryNextData(), tryJsonLd(), tryDom()].filter(Boolean);
+  if (!results.length) return null;
+
+  const merged = {};
+  for (const r of results) {
+    for (const [k, v] of Object.entries(r)) {
+      if (v != null && v !== '' && !(k in merged)) merged[k] = v;
+    }
+  }
+  console.log('[HouseX] Merged result:', merged);
+  return Object.keys(merged).length ? merged : null;
 }
 
 function injectButton() {
