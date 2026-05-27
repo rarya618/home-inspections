@@ -158,7 +158,7 @@ export const fetchTransitTimes = async (propertyAddress: string): Promise<Transi
         ? findNearbyPlace(propertyLocation, ['supermarket', 'grocery_store'], 'aldi')
         : Promise.resolve(null),
       propertyLocation
-        ? findNearbyPlace(propertyLocation, ['restaurant', 'fast_food_restaurant'], 'guzman')
+        ? findNearbyPlace(propertyLocation, ['restaurant', 'fast_food_restaurant'], 'guzman y gomez')
         : Promise.resolve(null),
       propertyLocation
         ? findNearbyPlace(propertyLocation, ['shopping_mall'])
