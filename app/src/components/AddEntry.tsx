@@ -16,12 +16,11 @@ type Field = {
 export const formStyle = ""
 export const textboxStyle = "w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600 text-gray-900 dark:text-white"
 export const checkboxStyle = "sr-only peer"
-export const labelStyle = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5"
+export const labelStyle = "block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight mb-1.5"
 
 export const fields: Field[] = [
   {id: "address", label: "Address", placeholder: "Full address"},
   {id: "rent", label: "Rent", placeholder: "Weekly rent"},
-  {id: "suburb", label: "Suburb", placeholder: "Suburb"},
   {id: "isInspected", label: "Inspected?", dataType: "checkbox"},
   {id: "uniPT", label: "Uni🚍", placeholder: "in minutes"},
   {id: "uniWalk", label: "Uni🚶", placeholder: "in minutes"},
@@ -39,10 +38,8 @@ export const fields: Field[] = [
   {id: "shoppingCenter", label: "Shopping centre (min.)", placeholder: "in minutes"},
   {id: "size", label: "Size offset", placeholder: "From -5 to 5"},
   {id: "convenience", label: "Offset", placeholder: "Offset"},
-  {id: "isEnsuite", label: "Ensuite?", dataType: "checkbox"},
   {id: "isKitchenPrivate", label: "Private kitchen?", dataType: "checkbox"},
   {id: "isFurnished", label: "Furnished?", dataType: "checkbox"},
-  {id: "isSharehouse", label: "Sharehouse?", dataType: "checkbox"},
   {id: "hasElectricity", label: "Electricity?", dataType: "checkbox"},
   {id: "hasWater", label: "Water?", dataType: "checkbox"},
   {id: "hasInternet", label: "Internet?", dataType: "checkbox"},
@@ -54,7 +51,6 @@ export type Entry = {
   address: string,
   score: number,
   listing?: string,
-  suburb?: string,
   bedrooms?: string,
   bathrooms?: string,
   carParks?: string,
@@ -70,11 +66,9 @@ export type Entry = {
   hasElectricity?: boolean,
   hasInternet?: boolean,
   hasWater?: boolean,
-  isEnsuite?: boolean,
   isKitchenPrivate?: boolean,
   isFurnished?: boolean,
   isRented?: boolean,
-  isSharehouse?: boolean,
   isInspected?: boolean,
   hasAirCon?: boolean,
   isPetsAllowed?: boolean,
@@ -98,7 +92,7 @@ type FormProps = {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400 dark:text-gray-600 mb-3">{children}</h3>
+    <h3 className="text-xs font-bold tracking-tight uppercase text-gray-400 dark:text-gray-600 mb-3">{children}</h3>
   );
 }
 
@@ -191,10 +185,7 @@ function AddEntryForm(props: FormProps) {
           <div className="space-y-3">
             <TextInput id="address" label="Address" placeholder="Full address" />
             <TextInput id="listing" label="Listing URL" placeholder="https://..." />
-            <div className="grid grid-cols-2 gap-3">
-              <TextInput id="rent" label="Weekly rent ($)" placeholder="380" />
-              <TextInput id="suburb" label="Suburb" placeholder="Surry Hills" />
-            </div>
+            <TextInput id="rent" label="Weekly rent ($)" placeholder="380" />
             <div className="grid grid-cols-3 gap-3">
               <TextInput id="bedrooms" label="Bedrooms" placeholder="2" />
               <TextInput id="bathrooms" label="Bathrooms" placeholder="1" />
@@ -208,10 +199,8 @@ function AddEntryForm(props: FormProps) {
           <SectionTitle>Features</SectionTitle>
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
             <Toggle id="isInspected" label="Inspected" />
-            <Toggle id="isEnsuite" label="Ensuite bathroom" />
             <Toggle id="isKitchenPrivate" label="Private kitchen" />
             <Toggle id="isFurnished" label="Furnished" />
-            <Toggle id="isSharehouse" label="Sharehouse" />
             <Toggle id="hasAirCon" label="Air conditioning" />
             <Toggle id="isPetsAllowed" label="Pets allowed" />
             <Toggle id="hasGarage" label="Garage" />
