@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchListing = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const v2_1 = require("firebase-functions/v2");
-(0, v2_1.setGlobalOptions)({ region: "australia-southeast1" });
+(0, v2_1.setGlobalOptions)({ region: "us-central1" });
 // Walks an object and returns the value at the first path that exists and is non-null
 function pick(obj, ...paths) {
     for (const path of paths) {
@@ -64,9 +64,9 @@ function parseREA(data) {
                 for (const item of val) {
                     if (typeof item === "string")
                         featureArrays.push(item);
-                    else if (item === null || item === void 0 ? void 0 : item.name)
+                    else if (item?.name)
                         featureArrays.push(String(item.name));
-                    else if (item === null || item === void 0 ? void 0 : item.label)
+                    else if (item?.label)
                         featureArrays.push(String(item.label));
                 }
             }
@@ -115,7 +115,7 @@ function parseDomain(data) {
         for (const f of rawFeatures) {
             if (typeof f === "string")
                 featureArrays.push(f);
-            else if (f === null || f === void 0 ? void 0 : f.name)
+            else if (f?.name)
                 featureArrays.push(String(f.name));
         }
     }
@@ -172,7 +172,7 @@ exports.fetchListing = (0, https_1.onRequest)({ cors: true }, async (req, res) =
     try {
         data = JSON.parse(match[1]);
     }
-    catch (_a) {
+    catch {
         res.status(422).json({ error: "Failed to parse listing data" });
         return;
     }

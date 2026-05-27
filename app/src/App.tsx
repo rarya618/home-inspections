@@ -6,6 +6,7 @@ import AddEntryForm from './components/AddEntry';
 import UpdateEntryForm from './components/UpdateEntry';
 import PropertyDetail from './components/PropertyDetail';
 import { Entry } from './components/AddEntry';
+import { ListingPrefill } from './utils/fetchListing';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTableCells, faList, faMap } from '@fortawesome/free-solid-svg-icons';
 
@@ -43,8 +44,23 @@ function App() {
   const [currentEntryData, setCurrentEntryData] = useState<Entry | null>(null)
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
+  const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
+
+  // Handle ?import= param set by the Chrome extension
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const raw = params.get('import')
+    if (!raw) return
+    try {
+      const data = JSON.parse(decodeURIComponent(escape(atob(raw)))) as ListingPrefill
+      setImportPrefill(data)
+      toggleAddFormDisplay(true)
+      window.history.replaceState({}, '', window.location.pathname)
+    } catch { /* malformed param — ignore */ }
+  }, [])
 
   const changeAddFormDisplay = () => {
+    if (isAddFormDisplayed) setImportPrefill(null)
     toggleAddFormDisplay(!isAddFormDisplayed);
   };
 
@@ -73,7 +89,7 @@ function App() {
     <>
     {
       isAddFormDisplayed ? (
-        <AddEntryForm changeHandler={changeAddFormDisplay}/>
+        <AddEntryForm changeHandler={changeAddFormDisplay} initialPrefill={importPrefill} />
       ): isUpdateFormDisplayed ? (
         <UpdateEntryForm
           currentEntry={currentEntry}
