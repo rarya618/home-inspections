@@ -43,6 +43,7 @@ export const fields: Field[] = [
   {id: "hasElectricity", label: "Electricity?", dataType: "checkbox"},
   {id: "hasWater", label: "Water?", dataType: "checkbox"},
   {id: "hasInternet", label: "Internet?", dataType: "checkbox"},
+  {id: "hasLawn", label: "Lawn?", dataType: "checkbox"},
   {id: "isRented", label: "Rented?", dataType: "checkbox"}
 ]
 
@@ -73,6 +74,7 @@ export type Entry = {
   hasAirCon?: boolean,
   isPetsAllowed?: boolean,
   hasGarage?: boolean,
+  hasLawn?: boolean,
   uniDrive?: string,
   workDrive?: string,
   rent: string,
@@ -204,6 +206,7 @@ function AddEntryForm(props: FormProps) {
             <Toggle id="hasAirCon" label="Air conditioning" />
             <Toggle id="isPetsAllowed" label="Pets allowed" />
             <Toggle id="hasGarage" label="Garage" />
+            <Toggle id="hasLawn" label="Lawn" />
             <Toggle id="isRented" label="Already rented" />
           </div>
         </section>

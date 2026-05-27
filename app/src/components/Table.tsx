@@ -7,7 +7,7 @@ import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import {
   faTrash, faCircleCheck, faUtensils, faCouch, faWind, faPaw,
   faWarehouse, faWifi, faBolt, faDroplet, faBed, faShower, faCar,
-  faEllipsisVertical, faArrowUpRightFromSquare, faExpand,
+  faEllipsisVertical, faArrowUpRightFromSquare, faExpand, faSeedling,
 } from "@fortawesome/free-solid-svg-icons";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useTitle } from "../App";
@@ -30,34 +30,40 @@ type Props = {
 
 const getScoreMeta = (score: number) => {
   if (score >= 800) return {
-    border: "border-l-emerald-500",
+    border: "border-l-emerald-400",
     scoreText: "text-emerald-600 dark:text-emerald-400",
     scoreBg: "bg-emerald-50 dark:bg-emerald-950/60",
+    dot: "bg-emerald-400",
   };
   if (score >= 650) return {
-    border: "border-l-teal-500",
+    border: "border-l-teal-400",
     scoreText: "text-teal-600 dark:text-teal-400",
     scoreBg: "bg-teal-50 dark:bg-teal-950/60",
+    dot: "bg-teal-400",
   };
   if (score >= 450) return {
-    border: "border-l-sky-500",
+    border: "border-l-sky-400",
     scoreText: "text-sky-600 dark:text-sky-400",
     scoreBg: "bg-sky-50 dark:bg-sky-950/60",
+    dot: "bg-sky-400",
   };
   if (score >= 300) return {
     border: "border-l-amber-400",
     scoreText: "text-amber-600 dark:text-amber-400",
     scoreBg: "bg-amber-50 dark:bg-amber-950/60",
+    dot: "bg-amber-400",
   };
   if (score >= 0) return {
     border: "border-l-orange-400",
     scoreText: "text-orange-600 dark:text-orange-400",
     scoreBg: "bg-orange-50 dark:bg-orange-950/60",
+    dot: "bg-orange-400",
   };
   return {
-    border: "border-l-red-500",
+    border: "border-l-red-400",
     scoreText: "text-red-600 dark:text-red-400",
     scoreBg: "bg-red-50 dark:bg-red-950/60",
+    dot: "bg-red-400",
   };
 };
 
@@ -90,6 +96,7 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
   if (entry.hasAirCon)        features.push({ icon: faWind,        title: "Air con" });
   if (entry.isPetsAllowed)    features.push({ icon: faPaw,         title: "Pets allowed" });
   if (entry.hasGarage)        features.push({ icon: faWarehouse,   title: "Garage" });
+  if (entry.hasLawn)          features.push({ icon: faSeedling,    title: "Lawn" });
   if (entry.hasInternet)      features.push({ icon: faWifi,        title: "Internet" });
   if (entry.hasElectricity)   features.push({ icon: faBolt,        title: "Electricity" });
   if (entry.hasWater)         features.push({ icon: faDroplet,     title: "Water" });
@@ -106,127 +113,96 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
   }
   const topStats = transitStats.slice(0, 3);
 
+  const beds = entry.bedrooms ? parseInt(entry.bedrooms) : null;
+  const ppRent = beds && beds > 1 ? Math.round(parseInt(entry.rent) / beds) : null;
+
   return (
     <div
-      className={`relative bg-white dark:bg-gray-900 rounded-lg border-l-4 ${meta.border} border-t border-r border-b border-t-gray-100 border-r-gray-100 border-b-gray-100 dark:border-t-gray-800 dark:border-r-gray-800 dark:border-b-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors duration-150 flex flex-col cursor-pointer`}
+      className={`relative bg-white dark:bg-gray-900 rounded-lg border-l-4 ${meta.border} border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors duration-150 flex flex-col cursor-pointer`}
       onClick={onClick}
     >
-      {/* Header row: address + score + menu */}
-      <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
+      {/* Top row: address + menu */}
+      <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-2">
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-bold text-gray-900 dark:text-white leading-snug truncate">
+          <h2 className="text-base font-bold text-gray-900 dark:text-white leading-snug truncate">
             {getStreet(entry.address || "") || "—"}
           </h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-            {getSuburb(entry.address || "") || "—"}
-          </p>
-        </div>
-        <div className="flex items-start gap-2 shrink-0">
-          <div className={`${meta.scoreBg} ${meta.scoreText} rounded-lg px-2.5 py-1.5 text-right`}>
-            <p className="text-lg font-extrabold leading-none tabular-nums">{score}</p>
-            <p className="text-[10px] font-semibold opacity-70 mt-0.5">score</p>
-          </div>
-          {/* Ellipsis menu */}
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
-              className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <FontAwesomeIcon icon={faEllipsisVertical} className="w-3.5" />
-            </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg z-50 overflow-hidden">
-                <button
-                  onClick={e => { e.stopPropagation(); setMenuOpen(false); onClick(); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <FontAwesomeIcon icon={faExpand} className="w-3.5 text-gray-400" />
-                  See details
-                </button>
-                <button
-                  onClick={e => { e.stopPropagation(); setMenuOpen(false); onEdit(); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <FontAwesomeIcon icon={faPenToSquare} className="w-3.5 text-gray-400" />
-                  Edit
-                </button>
-                {entry.listing && (
-                  <a
-                    href={entry.listing}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3.5 text-gray-400" />
-                    View listing
-                  </a>
-                )}
-                <div className="border-t border-gray-100 dark:border-gray-800" />
-                <button
-                  onClick={e => { e.stopPropagation(); setMenuOpen(false); onDelete(); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                >
-                  <FontAwesomeIcon icon={faTrash} className="w-3.5" />
-                  Delete
-                </button>
-              </div>
-            )}
+          <div className="flex items-center gap-2 mt-1 text-xs text-gray-400 dark:text-gray-500">
+            {entry.bedrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faBed} className="w-3" />{entry.bedrooms}</span>}
+            {entry.bathrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faShower} className="w-3" />{entry.bathrooms}</span>}
+            {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faCar} className="w-3" />{entry.carParks}</span>}
           </div>
         </div>
-      </div>
-
-      {/* Rent + specs */}
-      <div className="px-4 pb-3 flex items-baseline justify-between">
-        <div>
-          <span className="text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">/wk</span>
-          {entry.bedrooms && parseInt(entry.bedrooms) > 1 && (
-            <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mt-0.5">
-              ${Math.round(parseInt(entry.rent) / parseInt(entry.bedrooms))}/pp
-            </p>
+        <div className="relative shrink-0" ref={menuRef}>
+          <button
+            onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
+            className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors rounded-md"
+          >
+            <FontAwesomeIcon icon={faEllipsisVertical} className="w-3.5" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg z-50 overflow-hidden">
+              <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onClick(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <FontAwesomeIcon icon={faExpand} className="w-3.5 text-gray-400" /> See details
+              </button>
+              <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onEdit(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <FontAwesomeIcon icon={faPenToSquare} className="w-3.5 text-gray-400" /> Edit
+              </button>
+              {entry.listing && (
+                <a href={entry.listing} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3.5 text-gray-400" /> View listing
+                </a>
+              )}
+              <div className="border-t border-gray-100 dark:border-gray-800" />
+              <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onDelete(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+                <FontAwesomeIcon icon={faTrash} className="w-3.5" /> Delete
+              </button>
+            </div>
           )}
         </div>
-        {(entry.bedrooms || entry.bathrooms || entry.carParks) && (
-          <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
-            {entry.bedrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faBed} className="w-3" /> {entry.bedrooms}</span>}
-            {entry.bathrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faShower} className="w-3" /> {entry.bathrooms}</span>}
-            {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faCar} className="w-3" /> {entry.carParks}</span>}
-          </div>
-        )}
       </div>
 
-      {/* Divider */}
-      <div className="mx-4 border-t border-gray-100 dark:border-gray-800" />
-
-      {/* Feature icons */}
-      {features.length > 0 && (
-        <div className="px-4 py-2.5 flex gap-3 flex-wrap">
-          {features.map((f, i) => (
-            <span key={i} className="relative group/tip">
-              <FontAwesomeIcon icon={f.icon} className="text-sm text-gray-400 dark:text-gray-500" />
-              <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-xs font-medium text-white bg-gray-800 dark:bg-gray-700 rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150 z-50">
-                {f.title}
-              </span>
-            </span>
-          ))}
+      {/* Rent + score */}
+      <div className="px-4 pt-2 pb-4 flex items-end justify-between">
+        <div>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">/wk</span>
+          </div>
+          {ppRent && (
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>
+          )}
         </div>
-      )}
+        <div className={`${meta.scoreBg} ${meta.scoreText} rounded-md px-3 py-1.5 text-center`}>
+          <p className="text-xl font-extrabold tabular-nums leading-none">{score}</p>
+        </div>
+      </div>
 
-      {/* Transit stats */}
-      {topStats.length > 0 && (
-        <div className="px-4 pb-3 pt-1 flex gap-4">
-          {topStats.map(s => (
-            <div key={s.label} className="flex flex-col items-start">
-              <span className="text-lg font-bold text-gray-800 dark:text-gray-200 tabular-nums leading-tight">{s.value}<span className="text-xs font-medium text-gray-400 dark:text-gray-500 ml-1">min</span></span>
-              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap leading-tight mt-0.5">{s.label}</span>
+      {/* Footer: transit + features */}
+      {(topStats.length > 0 || features.length > 0) && (
+        <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
+          <div className="flex gap-4">
+            {topStats.map(s => (
+              <div key={s.label} className="flex flex-col">
+                <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums leading-tight">{s.value}<span className="text-xs font-normal text-gray-400 ml-0.5">min</span></span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">{s.label}</span>
+              </div>
+            ))}
+          </div>
+          {features.length > 0 && (
+            <div className="flex gap-2.5 shrink-0">
+              {features.map((f, i) => (
+                <span key={i} className="relative group/tip">
+                  <FontAwesomeIcon icon={f.icon} className="text-xs text-gray-300 dark:text-gray-600" />
+                  <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-xs font-medium text-white bg-gray-800 dark:bg-gray-700 rounded whitespace-nowrap opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150 z-50">
+                    {f.title}
+                  </span>
+                </span>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
-
-      {/* Spacer */}
-      <div className="flex-1" />
     </div>
   );
 }
@@ -240,17 +216,26 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
 }) {
   const score = entry.score ?? calculateScore(entry);
   const meta = getScoreMeta(score);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuPos) return;
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuPos(null);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
+  }, [menuPos]);
+
+  const openMenu = (x: number, y: number) => {
+    const menuW = 176; // w-44
+    const menuH = 200; // approximate
+    setMenuPos({
+      x: Math.min(x, window.innerWidth - menuW - 8),
+      y: Math.min(y, window.innerHeight - menuH - 8),
+    });
+  };
 
   const beds = entry.bedrooms ? parseInt(entry.bedrooms) : 1;
   const ppRent = beds > 1 ? Math.round(parseInt(entry.rent) / beds) : null;
@@ -262,8 +247,9 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
 
   return (
     <div
-      className={`relative flex items-center gap-4 px-4 py-3 border-l-4 ${meta.border} bg-white dark:bg-gray-900 border-b border-b-gray-100 dark:border-b-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors cursor-pointer`}
+      className={`relative flex items-center gap-3 px-4 py-2 border-l-4 ${meta.border} bg-white dark:bg-gray-900 border-b border-b-gray-100 dark:border-b-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors cursor-pointer first:rounded-t-lg last:rounded-b-lg last:border-b-0`}
       onClick={onClick}
+      onContextMenu={e => { e.preventDefault(); openMenu(e.clientX, e.clientY); }}
     >
       {/* Address */}
       <div className="flex-1 min-w-0">
@@ -271,44 +257,50 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
       </div>
 
       {/* Specs */}
-      <div className="hidden sm:flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 shrink-0">
+      <div className="hidden sm:flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 w-16 shrink-0">
         {entry.bedrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faBed} className="w-3" />{entry.bedrooms}</span>}
         {entry.bathrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faShower} className="w-3" />{entry.bathrooms}</span>}
       </div>
 
       {/* Transit */}
-      {transitVal && (
-        <div className="hidden sm:flex flex-col items-end shrink-0 w-16">
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums">{transitVal}<span className="text-xs font-normal text-gray-400 ml-0.5">m</span></span>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500">{transitLabel}</span>
-        </div>
-      )}
+      <div className="hidden sm:flex flex-col items-end w-16 shrink-0">
+        {transitVal
+          ? <>
+              <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums">{transitVal}<span className="text-xs font-normal text-gray-400 ml-0.5">min</span></span>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500">{transitLabel}</span>
+            </>
+          : <span className="text-xs text-gray-300 dark:text-gray-700">—</span>
+        }
+      </div>
 
       {/* Rent */}
-      <div className="shrink-0 text-right">
+      <div className="w-24 shrink-0 text-right">
         <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">${entry.rent}<span className="text-xs font-normal text-gray-400 dark:text-gray-500">/wk</span></p>
-        {ppRent && <p className="text-xs text-gray-400 dark:text-gray-500">${ppRent}/pp</p>}
+        {ppRent ? <p className="text-xs text-gray-400 dark:text-gray-500">${ppRent}/pp</p> : <p className="text-xs invisible">—</p>}
       </div>
 
       {/* Score */}
-      <div className={`shrink-0 ${meta.scoreBg} ${meta.scoreText} rounded-md px-2 py-1 text-center min-w-[44px]`}>
+      <div className={`w-12 shrink-0 ml-2 ${meta.scoreBg} ${meta.scoreText} rounded-md px-2 py-1 text-center`}>
         <p className="text-sm font-extrabold tabular-nums leading-none">{score}</p>
       </div>
 
-      {/* Menu */}
-      <div className="relative shrink-0" ref={menuRef}>
+      {/* Menu button */}
+      <div className="shrink-0" ref={menuRef}>
         <button
-          onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
+          onClick={e => { e.stopPropagation(); menuPos ? setMenuPos(null) : openMenu(e.clientX, e.clientY); }}
           className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <FontAwesomeIcon icon={faEllipsisVertical} className="w-3.5" />
         </button>
-        {menuOpen && (
-          <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg z-50 overflow-hidden">
-            <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onClick(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+        {menuPos && (
+          <div
+            className="fixed w-44 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg z-50 overflow-hidden"
+            style={{ top: menuPos.y, left: menuPos.x }}
+          >
+            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onClick(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <FontAwesomeIcon icon={faExpand} className="w-3.5 text-gray-400" /> See details
             </button>
-            <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onEdit(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onEdit(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <FontAwesomeIcon icon={faPenToSquare} className="w-3.5 text-gray-400" /> Edit
             </button>
             {entry.listing && (
@@ -317,7 +309,7 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
               </a>
             )}
             <div className="border-t border-gray-100 dark:border-gray-800" />
-            <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onDelete(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onDelete(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
               <FontAwesomeIcon icon={faTrash} className="w-3.5" /> Delete
             </button>
           </div>
@@ -395,7 +387,7 @@ function Table(props: Props) {
         {groups.map(({ suburb, entries }) => (
           <div key={suburb}>
             <h2 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-2 px-0.5">{suburb}</h2>
-            <div className="rounded-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div className="rounded-lg border border-gray-100 dark:border-gray-800">
               {entries.map(entry => (
                 <ListRow
                   key={entry.id}

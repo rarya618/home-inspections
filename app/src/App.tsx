@@ -41,7 +41,7 @@ function App() {
   const [currentEntry, setCurrentEntry] = useState("none")
   const [currentEntryData, setCurrentEntryData] = useState<Entry | null>(null)
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards')
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('list')
 
   const changeAddFormDisplay = () => {
     toggleAddFormDisplay(!isAddFormDisplayed);

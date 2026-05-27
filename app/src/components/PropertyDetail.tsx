@@ -5,7 +5,7 @@ import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import {
   faArrowLeft, faBed, faShower, faCar, faUtensils, faCouch, faWind,
   faPaw, faWarehouse, faWifi, faBolt, faDroplet, faBus, faPersonWalking,
-  faBasketShopping, faBurger, faStore, faCircleCheck,
+  faBasketShopping, faBurger, faStore, faCircleCheck, faSeedling,
 } from "@fortawesome/free-solid-svg-icons";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useTitle } from "../App";
@@ -98,7 +98,8 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
   const hasNearby  = entry.coles || entry.woolies || entry.aldi || entry.gyg || entry.shoppingCenter;
   const hasFeatures = entry.isKitchenPrivate !== undefined ||
                       entry.isFurnished !== undefined ||
-                      entry.hasAirCon !== undefined || entry.isPetsAllowed !== undefined;
+                      entry.hasAirCon !== undefined || entry.isPetsAllowed !== undefined ||
+                      entry.hasLawn !== undefined;
   const hasUtils   = entry.hasElectricity !== undefined || entry.hasWater !== undefined || entry.hasInternet !== undefined;
   const hasOffsets = (entry.size && entry.size !== "0") || (entry.convenience && entry.convenience !== "0");
 
@@ -200,6 +201,7 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
                 <FeatureChip icon={faWind}      label="Air con"         value={entry.hasAirCon} />
                 <FeatureChip icon={faPaw}       label="Pets allowed"    value={entry.isPetsAllowed} />
                 <FeatureChip icon={faWarehouse}  label="Garage"          value={entry.hasGarage} />
+                <FeatureChip icon={faSeedling}   label="Lawn"            value={entry.hasLawn} />
               </div>
             </div>
           )}

@@ -1,48 +1,11 @@
 import { Entry } from "./AddEntry";
 
 // returns the rent factor for property
+// neutral at $350/pp; cheaper = +2/dollar, dearer = -3/dollar, floor -500
 const getRentFactor = (rent: number) => {
-  if (rent <= 200) {
-    return 300
-  }
-  if (rent <= 230) {
-    return 260
-  }
-  if (rent <= 250) {
-    return 220
-  }
-  if (rent <= 280) {
-    return 180
-  }
-  if (rent <= 300) {
-    return 140
-  }
-  if (rent <= 320) {
-    return 100
-  }
-  if (rent <= 330) {
-    return 60
-  }
-  if (rent <= 340) {
-    return 30
-  }
-  if (rent <= 350) {
-    return 0
-  }
-  if (rent <= 380) {
-    return -80
-  }
-  if (rent <= 400) {
-    return -160
-  }
-  if (rent <= 420) {
-    return -250
-  }
-  if (rent <= 430) {
-    return -350
-  }
-
-  return -500
+  const delta = 350 - rent
+  if (delta >= 0) return Math.round(delta * 2)
+  else return Math.max(Math.round(delta * 3), -500)
 }
 
 // returns the public transport factor for property
@@ -308,6 +271,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   if (entry.hasAirCon) add("Air con", 150)
   if (entry.isPetsAllowed) add("Pets allowed", 100)
   if (entry.hasGarage) add("Garage", 250)
+  if (entry.hasLawn) add("Lawn (maintenance)", -150)
   if (entry.size)        add("Size",        parseInt(entry.size) * 100)
   if (entry.convenience) add("Convenience", parseInt(entry.convenience) * 100)
 
@@ -403,6 +367,9 @@ const calculateScore = (entry: Entry) => {
 
     // add garage score
     if (entry.hasGarage) score += 250
+
+    // lawn penalty
+    if (entry.hasLawn) score -= 150
 
     // add offsets
     if (entry.size)
