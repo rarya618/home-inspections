@@ -1,7 +1,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { setGlobalOptions } from "firebase-functions/v2";
 
-setGlobalOptions({ region: "australia-southeast1" });
+setGlobalOptions({ region: "us-central1" });
 
 interface ListingData {
   address?: string;
