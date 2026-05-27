@@ -108,27 +108,20 @@ const getGroceryFactor = (minutesTaken: number) => {
 }
 
 // returns the utility factor for property
-const getUtilFactor = (hasElectricity: boolean, hasWater: boolean, hasInternet: boolean) => {
+// undefined = not entered → neutral (0); true = included → +150; false = explicitly not included → -100
+const getUtilFactor = (hasElectricity: boolean | undefined, hasWater: boolean | undefined, hasInternet: boolean | undefined) => {
   let utilFactor = 0
 
-  if (hasElectricity) utilFactor += 150
-  else utilFactor -= 100
+  if (hasElectricity === true)       utilFactor += 150
+  else if (hasElectricity === false) utilFactor -= 100
 
-  if (hasWater) utilFactor += 150
-  else utilFactor -= 100
+  if (hasWater === true)       utilFactor += 150
+  else if (hasWater === false) utilFactor -= 100
 
-  if (hasInternet) utilFactor += 150
-  else utilFactor -= 100
+  if (hasInternet === true)       utilFactor += 150
+  else if (hasInternet === false) utilFactor -= 100
 
   return utilFactor
-}
-
-// returns the ensuite factor for property
-const getEnsuiteFactor = (isEnsuite: boolean) => {
-  if (isEnsuite)
-    return 200
-  else
-    return -100
 }
 
 // returns the kitchen factor for property
@@ -142,17 +135,15 @@ const getKitchenFactor = (isKitchenPrivate: boolean) => {
 // returns the furnished factor for property
 const getFurnishedFactor = (isFurnished: boolean) => {
   if (isFurnished)
-    return 100
-  else
     return -100
+  else
+    return 100
 }
 
-// returns the sharehouse factor for property
-const getSharehouseFactor = (isSharehouse: boolean) => {
-  if (isSharehouse)
-    return -350
-  else
-    return 350
+// overhead penalty — doubles with each additional person
+const getCohabitationPenalty = (beds: number) => {
+  if (beds <= 1) return 0
+  return -Math.round(50 * Math.pow(2, beds - 2))
 }
 
 
@@ -168,14 +159,6 @@ const getDrivingFactor = (minutesTaken: number) => {
   if (minutesTaken <= 45) return 0
   if (minutesTaken <= 55) return -30
   return -80
-}
-
-// returns the sharehouse factor for property
-const getInspectedFactor = (isInspected: boolean) => {
-  if (isInspected)
-    return 100
-  else
-    return -50
 }
 
 // returns the gyg factor for property
@@ -296,12 +279,10 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   const trainDrive = entry.trainDrive ? parseInt(entry.trainDrive) : 0
   add("Train station", getTrainStationScore(trainPT, trainWalk, trainDrive))
 
-  add("Utilities", getUtilFactor(!!entry.hasElectricity, !!entry.hasWater, !!entry.hasInternet))
-  add("Ensuite", getEnsuiteFactor(!!entry.isEnsuite))
+  add("Utilities", getUtilFactor(entry.hasElectricity, entry.hasWater, entry.hasInternet))
   add("Private kitchen", getKitchenFactor(!!entry.isKitchenPrivate))
   add("Furnished", getFurnishedFactor(!!entry.isFurnished))
-  add("Whole place", getSharehouseFactor(!!entry.isSharehouse))
-  add("Inspected", getInspectedFactor(!!entry.isInspected))
+  add("Cohabitation overhead", getCohabitationPenalty(beds))
   add("GYG proximity", getGygFactor(entry.gyg ? parseInt(entry.gyg) : 0))
 
   if (beds > 1) {
@@ -378,15 +359,7 @@ const calculateScore = (entry: Entry) => {
     score += getTrainStationScore(trainPTMinutes, trainWalkMinutes, trainDriveMinutes)
 
     // add utilities score
-    let hasElectricity = entry.hasElectricity ? true : false;
-    let hasWater = entry.hasWater ? true : false;
-    let hasInternet = entry.hasInternet ? true : false;
-
-    score += getUtilFactor(hasElectricity, hasWater, hasInternet)
-
-    // add ensuite score
-    let isEnsuite = entry.isEnsuite ? true : false
-    score += getEnsuiteFactor(isEnsuite)
+    score += getUtilFactor(entry.hasElectricity, entry.hasWater, entry.hasInternet)
 
     // add kitchen score
     let isKitchenPrivate = entry.isKitchenPrivate ? true : false
@@ -396,13 +369,8 @@ const calculateScore = (entry: Entry) => {
     let isFurnished = entry.isFurnished ? true : false
     score += getFurnishedFactor(isFurnished)
 
-    // add sharehouse score
-    let isSharehouse = entry.isSharehouse ? true : false
-    score += getSharehouseFactor(isSharehouse)
-
-    // add inspected score
-    let isInspected = entry.isInspected ? true : false
-    score += getInspectedFactor(isInspected)
+    // cohabitation overhead — always applied, scales with bedrooms
+    score += getCohabitationPenalty(beds)
 
     // add gyg score
     let gygMinutes = entry.gyg ? parseInt(entry.gyg) : 0
