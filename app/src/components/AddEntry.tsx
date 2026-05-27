@@ -1,8 +1,9 @@
 import { FormEvent, useState } from "react";
 import { addEntryWithTransit } from "../firebase/database";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
 import { useTitle } from "../App";
+import { fetchListingData, ListingPrefill } from "../utils/fetchListing";
 
 type Field = {
   id: string,
@@ -98,25 +99,26 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function TextInput({ id, label, placeholder }: { id: string, label: string, placeholder?: string }) {
+function TextInput({ id, label, placeholder, defaultValue }: { id: string, label: string, placeholder?: string, defaultValue?: string }) {
   return (
     <div>
       <label htmlFor={id} className={labelStyle}>{label}</label>
       <input
         id={id}
         placeholder={placeholder}
+        defaultValue={defaultValue}
         className={textboxStyle}
       />
     </div>
   );
 }
 
-function Toggle({ id, label }: { id: string, label: string }) {
+function Toggle({ id, label, defaultChecked }: { id: string, label: string, defaultChecked?: boolean }) {
   return (
     <label htmlFor={id} className="flex items-center justify-between px-4 py-3 cursor-pointer select-none">
       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{label}</span>
       <div className="relative shrink-0 ml-4">
-        <input type="checkbox" id={id} className="sr-only peer" />
+        <input type="checkbox" id={id} className="sr-only peer" defaultChecked={defaultChecked} />
         <div className="w-10 h-6 rounded-full bg-gray-200 dark:bg-gray-700 peer-checked:bg-indigo-500 transition-colors" />
         <div className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4 pointer-events-none" />
       </div>
@@ -127,6 +129,26 @@ function Toggle({ id, label }: { id: string, label: string }) {
 function AddEntryForm(props: FormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [prefill, setPrefill] = useState<ListingPrefill | null>(null);
+  const [prefillKey, setPrefillKey] = useState(0);
+
+  const handleImport = async () => {
+    if (!importUrl.trim()) return;
+    setIsImporting(true);
+    setImportError(null);
+    try {
+      const data = await fetchListingData(importUrl.trim());
+      setPrefill(data);
+      setPrefillKey(k => k + 1);
+    } catch (err) {
+      setImportError(String(err).replace('Error: ', ''));
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const formSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -181,17 +203,51 @@ function AddEntryForm(props: FormProps) {
 
       <form onSubmit={formSubmit} className="max-w-xl mx-auto px-4 pt-6 pb-24 space-y-8">
 
-        {/* Property */}
+        {/* Import from REA / Domain */}
+        <section>
+          <SectionTitle>Import listing</SectionTitle>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={importUrl}
+                onChange={e => setImportUrl(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleImport(); } }}
+                placeholder="https://www.realestate.com.au/..."
+                className={`flex-1 ${textboxStyle}`}
+              />
+              <button
+                type="button"
+                onClick={handleImport}
+                disabled={isImporting || !importUrl.trim()}
+                className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all"
+              >
+                <FontAwesomeIcon icon={faWandMagicSparkles} className="w-3.5" />
+                {isImporting ? 'Importing…' : 'Import'}
+              </button>
+            </div>
+            {importError && <p className="text-xs text-red-500 font-medium">{importError}</p>}
+            {prefill && !importError && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                ✓ Fields populated from listing — review and save
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* Property — re-keyed when prefill arrives so defaultValues take effect */}
+        <div key={prefillKey} className="space-y-8">
+
         <section>
           <SectionTitle>Property</SectionTitle>
           <div className="space-y-3">
-            <TextInput id="address" label="Address" placeholder="Full address" />
-            <TextInput id="listing" label="Listing URL" placeholder="https://..." />
-            <TextInput id="rent" label="Weekly rent ($)" placeholder="380" />
+            <TextInput id="address" label="Address" placeholder="Full address" defaultValue={prefill?.address} />
+            <TextInput id="listing" label="Listing URL" placeholder="https://..." defaultValue={importUrl || undefined} />
+            <TextInput id="rent" label="Weekly rent ($)" placeholder="380" defaultValue={prefill?.rent} />
             <div className="grid grid-cols-3 gap-3">
-              <TextInput id="bedrooms" label="Bedrooms" placeholder="2" />
-              <TextInput id="bathrooms" label="Bathrooms" placeholder="1" />
-              <TextInput id="carParks" label="Car parks" placeholder="0" />
+              <TextInput id="bedrooms" label="Bedrooms" placeholder="2" defaultValue={prefill?.bedrooms} />
+              <TextInput id="bathrooms" label="Bathrooms" placeholder="1" defaultValue={prefill?.bathrooms} />
+              <TextInput id="carParks" label="Car parks" placeholder="0" defaultValue={prefill?.carParks} />
             </div>
           </div>
         </section>
@@ -202,10 +258,10 @@ function AddEntryForm(props: FormProps) {
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800">
             <Toggle id="isInspected" label="Inspected" />
             <Toggle id="isKitchenPrivate" label="Private kitchen" />
-            <Toggle id="isFurnished" label="Furnished" />
-            <Toggle id="hasAirCon" label="Air conditioning" />
-            <Toggle id="isPetsAllowed" label="Pets allowed" />
-            <Toggle id="hasGarage" label="Garage" />
+            <Toggle id="isFurnished" label="Furnished" defaultChecked={prefill?.isFurnished} />
+            <Toggle id="hasAirCon" label="Air conditioning" defaultChecked={prefill?.hasAirCon} />
+            <Toggle id="isPetsAllowed" label="Pets allowed" defaultChecked={prefill?.isPetsAllowed} />
+            <Toggle id="hasGarage" label="Garage" defaultChecked={prefill?.hasGarage} />
             <Toggle id="hasLawn" label="Lawn" />
             <Toggle id="isRented" label="Already rented" />
           </div>
@@ -237,6 +293,8 @@ function AddEntryForm(props: FormProps) {
             <TextInput id="convenience" label="Convenience" placeholder="-5 to 5" />
           </div>
         </section>
+
+        </div>{/* end prefillKey wrapper */}
 
         {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
 
