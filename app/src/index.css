@@ -2,7 +2,6 @@
   font-family: 'Montserrat', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  letter-spacing: -0.03em;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -17,6 +16,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  letter-spacing: -0.03em;
+}
 
 body {
   margin: 0;
@@ -36,8 +39,5 @@ button:focus-visible {
   }
   a:hover {
     color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }
