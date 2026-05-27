@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "HouseX Importer",
+  "version": "1.0",
+  "description": "Import realestate.com.au and domain.com.au listings into HouseX",
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.realestate.com.au/property-*",
+        "*://*.domain.com.au/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

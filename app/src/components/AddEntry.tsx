@@ -91,6 +91,7 @@ export const sampleEntry: Entry = {id: "null", address: "sample", rent: "0", sco
 
 type FormProps = {
   changeHandler: () => void
+  initialPrefill?: ListingPrefill | null
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -129,11 +130,11 @@ function Toggle({ id, label, defaultChecked }: { id: string, label: string, defa
 function AddEntryForm(props: FormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [importUrl, setImportUrl] = useState('');
+  const [importUrl, setImportUrl] = useState(props.initialPrefill?.listing as string ?? '');
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
-  const [prefill, setPrefill] = useState<ListingPrefill | null>(null);
-  const [prefillKey, setPrefillKey] = useState(0);
+  const [prefill, setPrefill] = useState<ListingPrefill | null>(props.initialPrefill ?? null);
+  const [prefillKey, setPrefillKey] = useState(props.initialPrefill ? 1 : 0);
 
   const handleImport = async () => {
     if (!importUrl.trim()) return;
