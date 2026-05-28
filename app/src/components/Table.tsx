@@ -28,7 +28,8 @@ type Props = {
   transitMode: 'pt' | 'drive',
   viewMode: 'cards' | 'list',  // 'map' is handled above in App and never passed here
   refreshKey: number,
-  groupBy: 'none' | 'suburb',
+  groupBy: 'none' | 'suburb' | 'uni' | 'work',
+  search: string,
 }
 
 const getScoreMeta = (score: number) => {
@@ -358,7 +359,7 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
 }
 
 function Table(props: Props) {
-  const { transitMode, viewMode, refreshKey, groupBy } = props;
+  const { transitMode, viewMode, refreshKey, groupBy, search } = props;
   const [data, setData] = useState([sampleEntry]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -386,8 +387,10 @@ function Table(props: Props) {
     )
   }
 
+  const q = search.trim().toLowerCase();
   const visibleEntries = [...data]
     .filter(e => !e.isRented)
+    .filter(e => !q || (e.address || '').toLowerCase().includes(q))
     .sort((a, b) => (b.score ?? calculateScore(b)) - (a.score ?? calculateScore(a)));
 
   if (visibleEntries.length === 0) {
@@ -415,13 +418,31 @@ function Table(props: Props) {
     await getDataFromDb();
   }
 
-  // Group by suburb, preserving score-sorted order within each group
-  const groups: { suburb: string; entries: typeof visibleEntries }[] = []
+  const PROXIMITY_BUCKETS = ['≤ 20 min', '21 – 35 min', '36 – 50 min', '> 50 min', 'No data']
+  const getProximityBucket = (mins: string | undefined): string => {
+    if (!mins) return 'No data'
+    const m = parseInt(mins)
+    if (m <= 20) return '≤ 20 min'
+    if (m <= 35) return '21 – 35 min'
+    if (m <= 50) return '36 – 50 min'
+    return '> 50 min'
+  }
+  const getGroupKey = (entry: Entry): string => {
+    if (groupBy === 'suburb') return getSuburb(entry.address || '') || 'Other'
+    if (groupBy === 'uni') return getProximityBucket(transitMode === 'pt' ? entry.uniPT : entry.uniDrive)
+    if (groupBy === 'work') return getProximityBucket(transitMode === 'pt' ? entry.workPT : entry.workDrive)
+    return ''
+  }
+
+  const groups: { label: string; entries: typeof visibleEntries }[] = []
   for (const entry of visibleEntries) {
-    const suburb = getSuburb(entry.address || "") || "Other"
-    const existing = groups.find(g => g.suburb === suburb)
+    const label = getGroupKey(entry)
+    const existing = groups.find(g => g.label === label)
     if (existing) existing.entries.push(entry)
-    else groups.push({ suburb, entries: [entry] })
+    else groups.push({ label, entries: [entry] })
+  }
+  if (groupBy === 'uni' || groupBy === 'work') {
+    groups.sort((a, b) => PROXIMITY_BUCKETS.indexOf(a.label) - PROXIMITY_BUCKETS.indexOf(b.label))
   }
 
   if (viewMode === 'list') {
@@ -444,9 +465,9 @@ function Table(props: Props) {
     }
     return (
       <div className="space-y-6 pb-24">
-        {groups.map(({ suburb, entries }) => (
-          <div key={suburb}>
-            <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-0">{suburb}</h2>
+        {groups.map(({ label, entries }) => (
+          <div key={label}>
+            <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-0">{label}</h2>
             <div className="rounded border border-gray-100 dark:border-gray-800">
               {entries.map(entry => (
                 <ListRow
@@ -485,9 +506,9 @@ function Table(props: Props) {
 
   return (
     <div className="space-y-8 pb-24">
-      {groups.map(({ suburb, entries }) => (
-        <div key={suburb}>
-          <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-1">{suburb}</h2>
+      {groups.map(({ label, entries }) => (
+        <div key={label}>
+          <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-1">{label}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {entries.map(entry => (
               <PropertyCard

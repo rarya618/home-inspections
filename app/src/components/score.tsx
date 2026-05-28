@@ -19,7 +19,9 @@ const getPTFactor = (minutesTaken: number, _isMisc: boolean) => {
   if (minutesTaken <= 40) return 0
   if (minutesTaken <= 50) return -20
   if (minutesTaken <= 60) return -40
-  return -60
+  if (minutesTaken <= 75) return -100
+  if (minutesTaken <= 90) return -160
+  return -220
 }
 
 // returns the walking factor for property
@@ -124,11 +126,13 @@ const getDrivingFactor = (minutesTaken: number) => {
   if (minutesTaken <= 15) return 120
   if (minutesTaken <= 20) return 90
   if (minutesTaken <= 25) return 60
-  if (minutesTaken <= 30) return 30
-  if (minutesTaken <= 40) return 0
-  if (minutesTaken <= 50) return -15
-  if (minutesTaken <= 60) return -30
-  return -45
+  if (minutesTaken <= 30) return 0
+  if (minutesTaken <= 40) return -30
+  if (minutesTaken <= 50) return -60
+  if (minutesTaken <= 60) return -90
+  if (minutesTaken <= 75) return -120
+  if (minutesTaken <= 90) return -165
+  return -220
 }
 
 // returns the gyg factor for property
@@ -283,7 +287,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   }
 
   if (entry.carParks && parseInt(entry.carParks) >= 1) add("Car parks", 150)
-  if (entry.hasAirCon) add("Air con", 150)
+  add("Air con", entry.hasAirCon ? 150 : -100)
   if (entry.isPetsAllowed) add("Pets allowed", 100)
   if (entry.hasGarage) add("Garage", 100)
   if (entry.hasLawn) add("Lawn (maintenance)", -150)
@@ -379,6 +383,7 @@ const calculateScore = (entry: Entry) => {
 
     // add air con score
     if (entry.hasAirCon) score += 150
+    else score -= 100
 
     // add pets allowed score
     if (entry.isPetsAllowed) score += 100

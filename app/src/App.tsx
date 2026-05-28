@@ -8,7 +8,7 @@ import PropertyDetail from './components/PropertyDetail';
 import { Entry } from './components/AddEntry';
 import { ListingPrefill } from './utils/fetchListing';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableCells, faList, faMap, faArrowsRotate, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faTableCells, faList, faMap, faArrowsRotate, faChevronDown, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 
 // set page title
 export function useTitle(title: string) {
@@ -88,9 +88,10 @@ function App() {
   const [currentEntryData, setCurrentEntryData] = useState<Entry | null>(null)
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
-  const [groupBy, setGroupBy] = useState<'none' | 'suburb'>('suburb')
+  const [groupBy, setGroupBy] = useState<'none' | 'suburb' | 'uni' | 'work'>('suburb')
   const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [search, setSearch] = useState('')
 
   // Handle ?import= param set by the Chrome extension
   useEffect(() => {
@@ -164,6 +165,16 @@ function App() {
           <div className="flex items-center gap-2">
             {viewMode !== 'map' && (
               <>
+              <div className="relative">
+                <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-3 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search…"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="bg-gray-100 dark:bg-gray-800 rounded-full pl-8 pr-3 py-2.5 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-48"
+                />
+              </div>
               <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
                 <button
                   onClick={() => setTransitMode('pt')}
@@ -179,6 +190,8 @@ function App() {
                 options={[
                   { value: 'none', label: 'No grouping' },
                   { value: 'suburb', label: 'Suburb' },
+                  { value: 'uni', label: 'Uni proximity' },
+                  { value: 'work', label: 'Work proximity' },
                 ]}
                 onChange={setGroupBy}
               />
@@ -200,6 +213,7 @@ function App() {
             </div>
           </div>
         </div>
+
       </div>
       {viewMode === 'map' ? (
         <MapView onCardClick={openDetail} />
@@ -214,6 +228,7 @@ function App() {
             viewMode={viewMode}
             refreshKey={refreshKey}
             groupBy={groupBy}
+            search={search}
           />
         </div>
       )}

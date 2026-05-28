@@ -183,26 +183,30 @@ function UpdateEntryForm(props: FormProps) {
                 'trainWalk','trainPT','trainDrive',
                 'coles','woolies','aldi','gyg','shoppingCenter',
               ] as (keyof TransitTimes)[]).some(k => data[k]) ? (
-                <div className="grid grid-cols-3 gap-x-4 gap-y-1.5 text-xs mb-1">
+                <div className="space-y-3 text-xs">
                   {[
-                    { key: 'uniPT',          label: 'Uni 🚍' },
-                    { key: 'uniDrive',        label: 'Uni 🚗' },
-                    { key: 'workPT',          label: 'Work 🚍' },
-                    { key: 'workDrive',       label: 'Work 🚗' },
-                    { key: 'trainWalk',       label: 'Train 🚶' },
-                    { key: 'trainPT',         label: 'Train 🚍' },
-                    { key: 'trainDrive',      label: 'Train 🚗' },
-                    { key: 'coles',           label: 'Coles 🛒' },
-                    { key: 'woolies',         label: 'Woolies 🛒' },
-                    { key: 'aldi',            label: 'ALDI 🛒' },
-                    { key: 'gyg',             label: 'GYG 🌮' },
-                    { key: 'shoppingCenter',  label: 'Mall 🏬' },
-                  ].map(({ key, label }) => data[key] ? (
-                    <div key={key}>
-                      <span className="text-gray-400 dark:text-gray-500">{label} </span>
-                      <span className="font-bold text-gray-700 dark:text-gray-300">{data[key]}m</span>
-                    </div>
-                  ) : null)}
+                    { label: 'Uni', keys: [{ key: 'uniPT', icon: '🚍' }, { key: 'uniWalk', icon: '🚶' }, { key: 'uniDrive', icon: '🚗' }] },
+                    { label: 'Work', keys: [{ key: 'workPT', icon: '🚍' }, { key: 'workWalk', icon: '🚶' }, { key: 'workDrive', icon: '🚗' }] },
+                    { label: 'Train station', keys: [{ key: 'trainPT', icon: '🚍' }, { key: 'trainWalk', icon: '🚶' }, { key: 'trainDrive', icon: '🚗' }] },
+                    { label: 'Groceries', keys: [{ key: 'coles', icon: 'Coles' }, { key: 'woolies', icon: 'Woolies' }, { key: 'aldi', icon: 'ALDI' }, { key: 'shoppingCenter', icon: 'Mall' }] },
+                    { label: 'Food', keys: [{ key: 'gyg', icon: 'GYG' }] },
+                  ].map(group => {
+                    const entries = group.keys.filter(({ key }) => data[key]);
+                    if (entries.length === 0) return null;
+                    return (
+                      <div key={group.label}>
+                        <p className="text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-tight mb-1">{group.label}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                          {entries.map(({ key, icon }) => (
+                            <div key={key}>
+                              <span className="text-gray-400 dark:text-gray-500">{icon} </span>
+                              <span className="font-bold text-gray-700 dark:text-gray-300">{data[key]}m</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-xs text-gray-400 dark:text-gray-500">No times fetched yet.</p>

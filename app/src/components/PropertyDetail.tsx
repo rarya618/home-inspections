@@ -233,10 +233,10 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
             </div>
           )}
 
-          {/* Transit */}
-          {(hasTransit || missingTransit) && (
+          {/* Transit & Nearby */}
+          {(hasTransit || hasNearby || missingTransit) && (
             <div>
-              <SectionTitle>Transit</SectionTitle>
+              <SectionTitle>Transit &amp; nearby</SectionTitle>
               {missingTransit && (
                 <button
                   onClick={handleFetchTransit}
@@ -247,28 +247,44 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
                   {transitFetched ? 'Fetched — reopen to see times' : fetchingTransit ? 'Fetching travel times…' : 'Fetch travel times'}
                 </button>
               )}
-              <div className="grid grid-cols-2 gap-2">
-                <StatTile icon={faBus}           label="Uni — bus/train"  value={entry.uniPT} />
-                <StatTile icon={faCar}           label="Uni — driving"    value={entry.uniDrive} />
-                <StatTile icon={faBus}           label="Work — bus/train" value={entry.workPT} />
-                <StatTile icon={faCar}           label="Work — driving"   value={entry.workDrive} />
-                <StatTile icon={faPersonWalking} label="Train — walking"  value={entry.trainWalk} />
-                <StatTile icon={faBus}           label="Train — bus/train" value={entry.trainPT} />
-                <StatTile icon={faCar}           label="Train — driving"  value={entry.trainDrive} />
-              </div>
-            </div>
-          )}
-
-          {/* Nearby */}
-          {hasNearby && (
-            <div>
-              <SectionTitle>Nearby</SectionTitle>
-              <div className="grid grid-cols-2 gap-2">
-                <StatTile icon={faBasketShopping} label="Coles"           value={entry.coles} />
-                <StatTile icon={faBasketShopping} label="Woolworths"      value={entry.woolies} />
-                <StatTile icon={faBasketShopping} label="ALDI"            value={entry.aldi} />
-                <StatTile icon={faBurger}         label="GYG"             value={entry.gyg} />
-                <StatTile icon={faStore}          label="Shopping centre" value={entry.shoppingCenter} />
+              <div className="space-y-4">
+                {[
+                  { label: 'Uni', tiles: [
+                    { icon: faBus, label: 'Bus/train', value: entry.uniPT },
+                    { icon: faPersonWalking, label: 'Walking', value: entry.uniWalk },
+                    { icon: faCar, label: 'Driving', value: entry.uniDrive },
+                  ]},
+                  { label: 'Work', tiles: [
+                    { icon: faBus, label: 'Bus/train', value: entry.workPT },
+                    { icon: faPersonWalking, label: 'Walking', value: entry.workWalk },
+                    { icon: faCar, label: 'Driving', value: entry.workDrive },
+                  ]},
+                  { label: 'Train station', tiles: [
+                    { icon: faBus, label: 'Bus/train', value: entry.trainPT },
+                    { icon: faPersonWalking, label: 'Walking', value: entry.trainWalk },
+                    { icon: faCar, label: 'Driving', value: entry.trainDrive },
+                  ]},
+                  { label: 'Groceries', tiles: [
+                    { icon: faBasketShopping, label: 'Coles', value: entry.coles },
+                    { icon: faBasketShopping, label: 'Woolworths', value: entry.woolies },
+                    { icon: faBasketShopping, label: 'ALDI', value: entry.aldi },
+                    { icon: faStore, label: 'Shopping centre', value: entry.shoppingCenter },
+                  ]},
+                  { label: 'Food', tiles: [
+                    { icon: faBurger, label: 'GYG', value: entry.gyg },
+                  ]},
+                ].map(group => {
+                  const visible = group.tiles.filter(t => t.value && t.value !== "0");
+                  if (visible.length === 0) return null;
+                  return (
+                    <div key={group.label}>
+                      <p className="text-xs font-semibold uppercase tracking-tight text-gray-400 dark:text-gray-500 mb-2">{group.label}</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {visible.map(t => <StatTile key={t.label} icon={t.icon} label={t.label} value={t.value} />)}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
