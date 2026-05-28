@@ -31,25 +31,25 @@ type Props = {
 }
 
 const getScoreMeta = (score: number) => {
-  if (score >= 800) return {
-    border: "border-l-emerald-400",
-    scoreText: "text-emerald-600 dark:text-emerald-400",
-    scoreBg: "bg-emerald-50 dark:bg-emerald-950/60",
-    dot: "bg-emerald-400",
+  if (score >= 900) return {
+    border: "border-l-green-400",
+    scoreText: "text-green-600 dark:text-green-400",
+    scoreBg: "bg-green-50 dark:bg-green-950/60",
+    dot: "bg-green-400",
   };
-  if (score >= 650) return {
-    border: "border-l-teal-400",
-    scoreText: "text-teal-600 dark:text-teal-400",
-    scoreBg: "bg-teal-50 dark:bg-teal-950/60",
-    dot: "bg-teal-400",
+  if (score >= 750) return {
+    border: "border-l-lime-400",
+    scoreText: "text-lime-600 dark:text-lime-400",
+    scoreBg: "bg-lime-50 dark:bg-lime-950/60",
+    dot: "bg-lime-400",
   };
-  if (score >= 450) return {
-    border: "border-l-sky-400",
-    scoreText: "text-sky-600 dark:text-sky-400",
-    scoreBg: "bg-sky-50 dark:bg-sky-950/60",
-    dot: "bg-sky-400",
+  if (score >= 550) return {
+    border: "border-l-yellow-400",
+    scoreText: "text-yellow-600 dark:text-yellow-400",
+    scoreBg: "bg-yellow-50 dark:bg-yellow-950/60",
+    dot: "bg-yellow-400",
   };
-  if (score >= 300) return {
+  if (score >= 350) return {
     border: "border-l-amber-400",
     scoreText: "text-amber-600 dark:text-amber-400",
     scoreBg: "bg-amber-50 dark:bg-amber-950/60",

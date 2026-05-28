@@ -1,10 +1,10 @@
 import { Entry } from "./AddEntry";
 
 // returns the rent factor for property
-// neutral at $350/pp; cheaper = +3/dollar, dearer = -4/dollar, floor -600
+// neutral at $350/pp; cheaper = +2.5/dollar, dearer = -4/dollar, floor -600
 const getRentFactor = (rent: number) => {
   const delta = 350 - rent
-  if (delta >= 0) return Math.round(delta * 3)
+  if (delta >= 0) return Math.round(delta * 2.5)
   else return Math.max(Math.round(delta * 4), -600)
 }
 
@@ -74,14 +74,14 @@ const getGroceryFactor = (minutesTaken: number) => {
 const getUtilFactor = (hasElectricity: boolean | undefined, hasWater: boolean | undefined, hasInternet: boolean | undefined) => {
   let utilFactor = 0
 
-  if (hasElectricity === true)       utilFactor += 150
-  else if (hasElectricity === false) utilFactor -= 100
+  if (hasElectricity === true)       utilFactor += 75
+  else if (hasElectricity === false) utilFactor -= 40
 
-  if (hasWater === true)       utilFactor += 150
-  else if (hasWater === false) utilFactor -= 100
+  if (hasWater === true)       utilFactor += 75
+  else if (hasWater === false) utilFactor -= 40
 
-  if (hasInternet === true)       utilFactor += 150
-  else if (hasInternet === false) utilFactor -= 100
+  if (hasInternet === true)       utilFactor += 75
+  else if (hasInternet === false) utilFactor -= 40
 
   return utilFactor
 }
@@ -287,8 +287,8 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   if (entry.isPetsAllowed) add("Pets allowed", 100)
   if (entry.hasGarage) add("Garage", 100)
   if (entry.hasLawn) add("Lawn (maintenance)", -150)
-  if (entry.size)        add("Size",        parseInt(entry.size) * 100)
-  if (entry.convenience) add("Convenience", parseInt(entry.convenience) * 100)
+  if (entry.size)        add("Size",        parseInt(entry.size) * 50)
+  if (entry.convenience) add("Convenience", parseInt(entry.convenience) * 50)
 
   return components
 }
@@ -391,10 +391,10 @@ const calculateScore = (entry: Entry) => {
 
     // add offsets
     if (entry.size)
-      score += parseInt(entry.size) * 100
+      score += parseInt(entry.size) * 50
 
     if (entry.convenience)
-      score += parseInt(entry.convenience) * 100
+      score += parseInt(entry.convenience) * 50
 
     return Math.round(score)
 }
