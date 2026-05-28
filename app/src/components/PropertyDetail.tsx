@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Entry } from "./AddEntry";
 import { calculateScore, calculateScoreBreakdown } from "./Score";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -5,10 +6,11 @@ import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import {
   faArrowLeft, faBed, faShower, faCar, faUtensils, faCouch, faWind,
   faPaw, faWarehouse, faWifi, faBolt, faDroplet, faBus, faPersonWalking,
-  faBasketShopping, faBurger, faStore, faCircleCheck, faSeedling,
+  faBasketShopping, faBurger, faStore, faCircleCheck, faSeedling, faRotate,
 } from "@fortawesome/free-solid-svg-icons";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useTitle } from "../App";
+import { refreshTransitTimes } from "../firebase/database";
 
 type Props = {
   entry: Entry,
@@ -91,6 +93,19 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
   const score = entry.score ?? calculateScore(entry);
   const meta = getScoreMeta(score);
   const breakdown = calculateScoreBreakdown(entry);
+  const [fetchingTransit, setFetchingTransit] = useState(false);
+  const [transitFetched, setTransitFetched] = useState(false);
+
+  const missingTransit = !entry.uniPT && !entry.uniWalk && !entry.uniDrive &&
+                         !entry.workPT && !entry.workWalk && !entry.workDrive &&
+                         !entry.trainPT && !entry.trainWalk && !entry.trainDrive;
+
+  const handleFetchTransit = async () => {
+    setFetchingTransit(true);
+    await refreshTransitTimes(entry.id, entry.address);
+    setFetchingTransit(false);
+    setTransitFetched(true);
+  };
 
   useTitle(entry.address || "Property");
 
@@ -219,9 +234,19 @@ export default function PropertyDetail({ entry, onClose, onEdit }: Props) {
           )}
 
           {/* Transit */}
-          {hasTransit && (
+          {(hasTransit || missingTransit) && (
             <div>
               <SectionTitle>Transit</SectionTitle>
+              {missingTransit && (
+                <button
+                  onClick={handleFetchTransit}
+                  disabled={fetchingTransit || transitFetched}
+                  className="flex items-center gap-2 text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/40 disabled:opacity-50 px-4 py-2.5 rounded-xl mb-3 transition-colors w-full"
+                >
+                  <FontAwesomeIcon icon={faRotate} className={fetchingTransit ? 'animate-spin' : ''} />
+                  {transitFetched ? 'Fetched — reopen to see times' : fetchingTransit ? 'Fetching travel times…' : 'Fetch travel times'}
+                </button>
+              )}
               <div className="grid grid-cols-2 gap-2">
                 <StatTile icon={faBus}           label="Uni — bus/train"  value={entry.uniPT} />
                 <StatTile icon={faCar}           label="Uni — driving"    value={entry.uniDrive} />

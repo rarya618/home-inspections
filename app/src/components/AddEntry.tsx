@@ -1,9 +1,9 @@
 import { FormEvent, useState } from "react";
 import { addEntryWithTransit } from "../firebase/database";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useTitle } from "../App";
-import { fetchListingData, ListingPrefill } from "../utils/fetchListing";
+import { ListingPrefill } from "../utils/fetchListing";
 
 type Field = {
   id: string,
@@ -130,26 +130,8 @@ function Toggle({ id, label, defaultChecked }: { id: string, label: string, defa
 function AddEntryForm(props: FormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [importUrl, setImportUrl] = useState(props.initialPrefill?.listing as string ?? '');
-  const [isImporting, setIsImporting] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
-  const [prefill, setPrefill] = useState<ListingPrefill | null>(props.initialPrefill ?? null);
-  const [prefillKey, setPrefillKey] = useState(props.initialPrefill ? 1 : 0);
-
-  const handleImport = async () => {
-    if (!importUrl.trim()) return;
-    setIsImporting(true);
-    setImportError(null);
-    try {
-      const data = await fetchListingData(importUrl.trim());
-      setPrefill(data);
-      setPrefillKey(k => k + 1);
-    } catch (err) {
-      setImportError(String(err).replace('Error: ', ''));
-    } finally {
-      setIsImporting(false);
-    }
-  };
+  const [prefill] = useState<ListingPrefill | null>(props.initialPrefill ?? null);
+  const [prefillKey] = useState(props.initialPrefill ? 1 : 0);
 
   const formSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -204,38 +186,6 @@ function AddEntryForm(props: FormProps) {
 
       <form onSubmit={formSubmit} className="max-w-xl mx-auto px-4 pt-6 pb-24 space-y-8">
 
-        {/* Import from REA / Domain */}
-        <section>
-          <SectionTitle>Import listing</SectionTitle>
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={importUrl}
-                onChange={e => setImportUrl(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleImport(); } }}
-                placeholder="https://www.realestate.com.au/..."
-                className={`flex-1 ${textboxStyle}`}
-              />
-              <button
-                type="button"
-                onClick={handleImport}
-                disabled={isImporting || !importUrl.trim()}
-                className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all"
-              >
-                <FontAwesomeIcon icon={faWandMagicSparkles} className="w-3.5" />
-                {isImporting ? 'Importing…' : 'Import'}
-              </button>
-            </div>
-            {importError && <p className="text-xs text-red-500 font-medium">{importError}</p>}
-            {prefill && !importError && (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                ✓ Fields populated from listing — review and save
-              </p>
-            )}
-          </div>
-        </section>
-
         {/* Property — re-keyed when prefill arrives so defaultValues take effect */}
         <div key={prefillKey} className="space-y-8">
 
@@ -243,7 +193,7 @@ function AddEntryForm(props: FormProps) {
           <SectionTitle>Property</SectionTitle>
           <div className="space-y-3">
             <TextInput id="address" label="Address" placeholder="Full address" defaultValue={prefill?.address} />
-            <TextInput id="listing" label="Listing URL" placeholder="https://..." defaultValue={importUrl || undefined} />
+            <TextInput id="listing" label="Listing URL" placeholder="https://..." defaultValue={prefill?.listing} />
             <TextInput id="rent" label="Weekly rent ($)" placeholder="380" defaultValue={prefill?.rent} />
             <div className="grid grid-cols-3 gap-3">
               <TextInput id="bedrooms" label="Bedrooms" placeholder="2" defaultValue={prefill?.bedrooms} />

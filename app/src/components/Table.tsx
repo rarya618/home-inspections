@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { sampleEntry, Entry } from "./AddEntry"
-import { getHouseEntries, deleteEntry } from "../firebase/database";
+import { getHouseEntries, deleteEntry, refreshTransitTimes } from "../firebase/database";
 import { calculateScore } from "./Score";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
@@ -8,6 +8,7 @@ import {
   faTrash, faCircleCheck, faUtensils, faCouch, faWind, faPaw,
   faWarehouse, faWifi, faBolt, faDroplet, faBed, faShower, faCar,
   faEllipsisVertical, faArrowUpRightFromSquare, faExpand, faSeedling,
+  faRotate,
 } from "@fortawesome/free-solid-svg-icons";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useTitle } from "../App";
@@ -26,6 +27,7 @@ type Props = {
   onCardClick: (entry: Entry) => void,
   transitMode: 'pt' | 'drive',
   viewMode: 'cards' | 'list',  // 'map' is handled above in App and never passed here
+  refreshKey: number,
 }
 
 const getScoreMeta = (score: number) => {
@@ -207,11 +209,12 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
   );
 }
 
-function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
+function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode }: {
   entry: Entry,
   onEdit: () => void,
   onDelete: () => void,
   onClick: () => void,
+  onFetchTransit: () => Promise<void>,
   transitMode: 'pt' | 'drive',
 }) {
   const score = entry.score ?? calculateScore(entry);
@@ -244,6 +247,19 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
   const workVal = transitMode === 'pt' ? (entry.workPT || null) : (entry.workDrive || null);
   const transitLabel = transitMode === 'pt' ? 'PT' : 'Drive';
 
+  const missingTransit = !entry.uniPT && !entry.uniWalk && !entry.uniDrive &&
+                         !entry.workPT && !entry.workWalk && !entry.workDrive &&
+                         !entry.trainPT && !entry.trainWalk && !entry.trainDrive;
+  const [fetchingTransit, setFetchingTransit] = useState(false);
+
+  const handleFetchTransit = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenuPos(null);
+    setFetchingTransit(true);
+    await onFetchTransit();
+    setFetchingTransit(false);
+  };
+
   return (
     <div
       className={`relative flex items-center gap-3 px-4 py-2 border-l-4 ${meta.border} bg-white dark:bg-gray-900 border-b border-b-gray-100 dark:border-b-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors cursor-pointer first:rounded-t last:rounded-b last:border-b-0`}
@@ -253,6 +269,16 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
       {/* Address */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{getStreet(entry.address || "") || "—"}</p>
+        {missingTransit && (
+          <button
+            onClick={handleFetchTransit}
+            disabled={fetchingTransit}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/50 px-1.5 py-0.5 rounded mt-0.5 transition-colors disabled:opacity-50"
+          >
+            <FontAwesomeIcon icon={faRotate} className={fetchingTransit ? 'animate-spin' : ''} />
+            {fetchingTransit ? 'Fetching…' : 'No travel times'}
+          </button>
+        )}
       </div>
 
       {/* Specs */}
@@ -306,6 +332,11 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
             <button onClick={e => { e.stopPropagation(); setMenuPos(null); onEdit(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <FontAwesomeIcon icon={faPenToSquare} className="w-3.5 text-gray-400" /> Edit
             </button>
+            {missingTransit && (
+              <button onClick={handleFetchTransit} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors">
+                <FontAwesomeIcon icon={faRotate} className="w-3.5" /> Fetch travel times
+              </button>
+            )}
             {entry.listing && (
               <a href={entry.listing} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3.5 text-gray-400" /> View listing
@@ -323,7 +354,7 @@ function ListRow({ entry, onEdit, onDelete, onClick, transitMode }: {
 }
 
 function Table(props: Props) {
-  const { transitMode, viewMode } = props;
+  const { transitMode, viewMode, refreshKey } = props;
   const [data, setData] = useState([sampleEntry]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -336,7 +367,7 @@ function Table(props: Props) {
 
   useEffect(() => {
     getDataFromDb();
-  }, [])
+  }, [refreshKey])
 
   useTitle("Dashboard")
 
@@ -375,6 +406,11 @@ function Table(props: Props) {
     await getDataFromDb();
   }
 
+  const handleFetchTransit = async (entryId: string, address: string) => {
+    await refreshTransitTimes(entryId, address);
+    await getDataFromDb();
+  }
+
   // Group by suburb, preserving score-sorted order within each group
   const groups: { suburb: string; entries: typeof visibleEntries }[] = []
   for (const entry of visibleEntries) {
@@ -398,6 +434,7 @@ function Table(props: Props) {
                   onEdit={() => handleEdit(entry.id)}
                   onDelete={() => handleDelete(entry.id)}
                   onClick={() => props.onCardClick(entry)}
+                  onFetchTransit={() => handleFetchTransit(entry.id, entry.address)}
                   transitMode={transitMode}
                 />
               ))}

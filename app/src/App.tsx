@@ -8,7 +8,7 @@ import PropertyDetail from './components/PropertyDetail';
 import { Entry } from './components/AddEntry';
 import { ListingPrefill } from './utils/fetchListing';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableCells, faList, faMap } from '@fortawesome/free-solid-svg-icons';
+import { faTableCells, faList, faMap, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 
 // set page title
 export function useTitle(title: string) {
@@ -45,6 +45,7 @@ function App() {
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
   const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // Handle ?import= param set by the Chrome extension
   useEffect(() => {
@@ -105,8 +106,15 @@ function App() {
       : (<>
       <div className={`sticky top-0 z-20 px-4 py-4 transition-colors ${viewMode === 'map' ? '' : 'bg-white/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800'}`}>
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex items-center gap-2">
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">HouseX</h1>
+            <button
+              onClick={() => setRefreshKey(k => k + 1)}
+              className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400 transition-colors rounded-lg"
+              title="Refresh"
+            >
+              <FontAwesomeIcon icon={faArrowsRotate} className="w-3.5" />
+            </button>
           </div>
           <div className="flex items-center gap-2">
             {viewMode !== 'map' && (
@@ -149,6 +157,7 @@ function App() {
             onCardClick={openDetail}
             transitMode={transitMode}
             viewMode={viewMode}
+            refreshKey={refreshKey}
           />
         </div>
       )}
