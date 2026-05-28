@@ -18,10 +18,10 @@ const getPTFactor = (minutesTaken: number, _isMisc: boolean) => {
   if (minutesTaken <= 35) return 40
   if (minutesTaken <= 40) return 0
   if (minutesTaken <= 50) return -20
-  if (minutesTaken <= 60) return -40
-  if (minutesTaken <= 75) return -100
-  if (minutesTaken <= 90) return -160
-  return -220
+  if (minutesTaken <= 60) return -80
+  if (minutesTaken <= 75) return -160
+  if (minutesTaken <= 90) return -240
+  return -320
 }
 
 // returns the walking factor for property
@@ -113,7 +113,7 @@ const getCohabitationPenalty = (beds: number) => {
 // penalty for needing to find housemates — kicks in at 3+ beds
 const getHousematePenalty = (beds: number) => {
   if (beds <= 2) return 0
-  if (beds === 3) return -150
+  if (beds === 3) return -75
   if (beds === 4) return -250
   return -350
 }
@@ -125,14 +125,14 @@ const getDrivingFactor = (minutesTaken: number) => {
   if (minutesTaken <= 10) return 150
   if (minutesTaken <= 15) return 120
   if (minutesTaken <= 20) return 90
-  if (minutesTaken <= 25) return 60
-  if (minutesTaken <= 30) return 0
-  if (minutesTaken <= 40) return -30
-  if (minutesTaken <= 50) return -60
-  if (minutesTaken <= 60) return -90
-  if (minutesTaken <= 75) return -120
-  if (minutesTaken <= 90) return -165
-  return -220
+  if (minutesTaken <= 25) return 30
+  if (minutesTaken <= 30) return -20
+  if (minutesTaken <= 40) return -90
+  if (minutesTaken <= 50) return -130
+  if (minutesTaken <= 60) return -170
+  if (minutesTaken <= 75) return -210
+  if (minutesTaken <= 90) return -250
+  return -300
 }
 
 // returns the gyg factor for property
@@ -205,18 +205,25 @@ const getTrainStationScore = (ptMins: number, walkMins: number, driveMins: numbe
   return modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
 }
 
+const getWalkBonus = (walkMins: number): number => {
+  if (walkMins <= 0 || walkMins > 50) return 0
+  if (walkMins <= 10) return 150
+  if (walkMins <= 20) return 100
+  if (walkMins <= 30) return 50
+  if (walkMins <= 40) return 25
+  return 10
+}
+
 const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): number => {
-  const walkable = walkMins > 0 && walkMins <= 30
+  const walkable = walkMins > 0 && walkMins <= 50
   const modes: { score: number; weight: number }[] = []
-  if (ptMins > 0)   modes.push({ score: getPTFactor(ptMins, false),  weight: 0.4 })
-  if (walkable)     modes.push({ score: getWalkingFactor(walkMins),  weight: 0.4 })
-  if (driveMins > 0) modes.push({ score: getDrivingFactor(driveMins), weight: 0.3 })
+  if (ptMins > 0)    modes.push({ score: getPTFactor(ptMins, false),   weight: 0.4 })
+  if (walkable)      modes.push({ score: getWalkingFactor(walkMins),   weight: 0.4 })
+  if (driveMins > 0) modes.push({ score: getDrivingFactor(driveMins),  weight: 0.3 })
   if (modes.length === 0) return 0
   const totalWeight = modes.reduce((s, m) => s + m.weight, 0)
   const blendScore = modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
-  // bonus for walkability — scales down with distance
-  const walkBonus = walkable ? Math.round(75 * (1 - (walkMins - 1) / 30)) : 0
-  return blendScore + walkBonus
+  return blendScore + getWalkBonus(walkMins)
 }
 
 export type ScoreComponent = { label: string; value: number }
@@ -239,12 +246,14 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   const uniPT    = entry.uniPT    ? parseInt(entry.uniPT)    : 0
   const uniWalk  = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0
   const uniDrive = entry.uniDrive ? parseInt(entry.uniDrive) : 0
-  add("Uni commute", getCommuteScore(uniPT, uniWalk, uniDrive))
+  add("Uni commute", getCommuteScore(uniPT, uniWalk, uniDrive) - getWalkBonus(uniWalk))
+  add("Uni walkability", getWalkBonus(uniWalk))
 
   const workPT    = entry.workPT    ? parseInt(entry.workPT)    : 0
   const workWalk  = entry.workWalk  ? parseInt(entry.workWalk)  : 0
   const workDrive = entry.workDrive ? parseInt(entry.workDrive) : 0
-  add("Work commute", getCommuteScore(workPT, workWalk, workDrive))
+  add("Work commute", getCommuteScore(workPT, workWalk, workDrive) - getWalkBonus(workWalk))
+  add("Work walkability", getWalkBonus(workWalk))
 
   const groceryTimes = [
     entry.coles         ? parseInt(entry.coles)         : 0,
@@ -278,11 +287,11 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
     const baths = parseInt(entry.bathrooms)
     const ratio = baths / beds
     let bathScore = 0
-    if (ratio >= 1.0)       bathScore = 200
+    if (ratio >= 1.0)       bathScore = 250
     else if (ratio >= 0.67) bathScore = 100
-    else if (ratio >= 0.5)  bathScore = 0
-    else if (ratio >= 0.33) bathScore = -100
-    else                    bathScore = -200
+    else if (ratio >= 0.5)  bathScore = -50
+    else if (ratio >= 0.33) bathScore = -250
+    else                    bathScore = -450
     add("Bathrooms", bathScore)
   }
 
@@ -291,6 +300,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   if (entry.isPetsAllowed) add("Pets allowed", 100)
   if (entry.hasGarage) add("Garage", 100)
   if (entry.hasLawn) add("Lawn (maintenance)", -150)
+  if (parseInt(entry.rent) / 2 <= 350) add("2-share value", 100)
   if (entry.size)        add("Size",        parseInt(entry.size) * 50)
   if (entry.convenience) add("Convenience", parseInt(entry.convenience) * 50)
 
@@ -371,11 +381,11 @@ const calculateScore = (entry: Entry) => {
     if (entry.bathrooms) {
       const baths = parseInt(entry.bathrooms)
       const ratio = baths / beds
-      if (ratio >= 1.0)       score += 200
+      if (ratio >= 1.0)       score += 250
       else if (ratio >= 0.67) score += 100
-      else if (ratio >= 0.5)  score += 0
-      else if (ratio >= 0.33) score -= 100
-      else                    score -= 200
+      else if (ratio >= 0.5)  score -= 50
+      else if (ratio >= 0.33) score -= 250
+      else                    score -= 450
     }
 
     // add car parks score
@@ -395,6 +405,8 @@ const calculateScore = (entry: Entry) => {
     if (entry.hasLawn) score -= 150
 
     // add offsets
+    if (parseInt(entry.rent) / 2 <= 350) score += 100
+
     if (entry.size)
       score += parseInt(entry.size) * 50
 

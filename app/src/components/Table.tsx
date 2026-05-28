@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { sampleEntry, Entry } from "./AddEntry"
+import { Filters } from "../App"
 import { getHouseEntries, deleteEntry, refreshTransitTimes } from "../firebase/database";
 import { calculateScore } from "./Score";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -30,6 +31,7 @@ type Props = {
   refreshKey: number,
   groupBy: 'none' | 'suburb' | 'uni' | 'work',
   search: string,
+  filters: Filters,
 }
 
 const getScoreMeta = (score: number) => {
@@ -358,8 +360,21 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
   );
 }
 
+const FEATURE_PREDICATES: Record<string, (e: Entry) => boolean> = {
+  inspected:    e => !!e.isInspected,
+  aircon:       e => !!e.hasAirCon,
+  kitchen:      e => !!e.isKitchenPrivate,
+  pets:         e => !!e.isPetsAllowed,
+  garage:       e => !!e.hasGarage,
+  electricity:  e => !!e.hasElectricity,
+  water:        e => !!e.hasWater,
+  internet:     e => !!e.hasInternet,
+  noLawn:       e => !e.hasLawn,
+  notFurnished: e => !e.isFurnished,
+}
+
 function Table(props: Props) {
-  const { transitMode, viewMode, refreshKey, groupBy, search } = props;
+  const { transitMode, viewMode, refreshKey, groupBy, search, filters } = props;
   const [data, setData] = useState([sampleEntry]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -391,6 +406,24 @@ function Table(props: Props) {
   const visibleEntries = [...data]
     .filter(e => !e.isRented)
     .filter(e => !q || (e.address || '').toLowerCase().includes(q))
+    .filter(e => [...filters.features].every(key => FEATURE_PREDICATES[key]?.(e)))
+    .filter(e => {
+      if (filters.maxRentPP) {
+        const beds = e.bedrooms ? Math.max(1, parseInt(e.bedrooms)) : 1
+        const rentPP = Math.round(parseInt(e.rent) / beds)
+        if (rentPP > parseInt(filters.maxRentPP)) return false
+      }
+      if (filters.minBedrooms && (!e.bedrooms || parseInt(e.bedrooms) < parseInt(filters.minBedrooms))) return false
+      if (filters.maxUniMins) {
+        const mins = transitMode === 'pt' ? e.uniPT : e.uniDrive
+        if (!mins || parseInt(mins) > parseInt(filters.maxUniMins)) return false
+      }
+      if (filters.maxWorkMins) {
+        const mins = transitMode === 'pt' ? e.workPT : e.workDrive
+        if (!mins || parseInt(mins) > parseInt(filters.maxWorkMins)) return false
+      }
+      return true
+    })
     .sort((a, b) => (b.score ?? calculateScore(b)) - (a.score ?? calculateScore(a)));
 
   if (visibleEntries.length === 0) {
@@ -418,14 +451,16 @@ function Table(props: Props) {
     await getDataFromDb();
   }
 
-  const PROXIMITY_BUCKETS = ['≤ 20 min', '21 – 35 min', '36 – 50 min', '> 50 min', 'No data']
+  const PROXIMITY_BUCKETS = ['≤ 10 min', '11 – 20 min', '21 – 30 min', '31 – 40 min', '41 – 55 min', '> 55 min', 'No data']
   const getProximityBucket = (mins: string | undefined): string => {
     if (!mins) return 'No data'
     const m = parseInt(mins)
-    if (m <= 20) return '≤ 20 min'
-    if (m <= 35) return '21 – 35 min'
-    if (m <= 50) return '36 – 50 min'
-    return '> 50 min'
+    if (m <= 10) return '≤ 10 min'
+    if (m <= 20) return '11 – 20 min'
+    if (m <= 30) return '21 – 30 min'
+    if (m <= 40) return '31 – 40 min'
+    if (m <= 55) return '41 – 55 min'
+    return '> 55 min'
   }
   const getGroupKey = (entry: Entry): string => {
     if (groupBy === 'suburb') return getSuburb(entry.address || '') || 'Other'
