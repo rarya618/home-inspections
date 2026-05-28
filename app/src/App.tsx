@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import Table from './components/Table'
 import MapView from './components/MapView'
@@ -8,7 +8,7 @@ import PropertyDetail from './components/PropertyDetail';
 import { Entry } from './components/AddEntry';
 import { ListingPrefill } from './utils/fetchListing';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableCells, faList, faMap, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import { faTableCells, faList, faMap, faArrowsRotate, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 // set page title
 export function useTitle(title: string) {
@@ -35,6 +35,50 @@ export function Button(text: string, onclick?: () => void) {
   )
 }
 
+function PillDropdown<T extends string>({ value, options, onChange }: {
+  value: T,
+  options: { value: T; label: string }[],
+  onChange: (v: T) => void,
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const selected = options.find(o => o.value === value)
+
+  return (
+    <div ref={ref} className="relative w-[140px]">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center justify-between gap-1.5 w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-full px-3 py-2.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      >
+        {selected?.label}
+        <FontAwesomeIcon icon={faChevronDown} className={`w-2.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1.5 z-50 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg overflow-hidden w-full">
+          {options.map(o => (
+            <button
+              key={o.value}
+              onClick={() => { onChange(o.value); setOpen(false) }}
+              className={`w-full text-left px-3.5 py-2 text-xs font-semibold transition-colors ${o.value === value ? 'text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // main app
 function App() {
   const [isAddFormDisplayed, toggleAddFormDisplay] = useState(false)
@@ -44,6 +88,7 @@ function App() {
   const [currentEntryData, setCurrentEntryData] = useState<Entry | null>(null)
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
+  const [groupBy, setGroupBy] = useState<'none' | 'suburb'>('suburb')
   const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -118,6 +163,7 @@ function App() {
           </div>
           <div className="flex items-center gap-2">
             {viewMode !== 'map' && (
+              <>
               <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
                 <button
                   onClick={() => setTransitMode('pt')}
@@ -128,6 +174,15 @@ function App() {
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'drive' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
                 >Drive</button>
               </div>
+              <PillDropdown
+                value={groupBy}
+                options={[
+                  { value: 'none', label: 'No grouping' },
+                  { value: 'suburb', label: 'Suburb' },
+                ]}
+                onChange={setGroupBy}
+              />
+              </>
             )}
             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
               <button
@@ -158,6 +213,7 @@ function App() {
             transitMode={transitMode}
             viewMode={viewMode}
             refreshKey={refreshKey}
+            groupBy={groupBy}
           />
         </div>
       )}

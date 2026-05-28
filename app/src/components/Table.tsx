@@ -28,6 +28,7 @@ type Props = {
   transitMode: 'pt' | 'drive',
   viewMode: 'cards' | 'list',  // 'map' is handled above in App and never passed here
   refreshKey: number,
+  groupBy: 'none' | 'suburb',
 }
 
 const getScoreMeta = (score: number) => {
@@ -269,6 +270,9 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
       {/* Address */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{getStreet(entry.address || "") || "—"}</p>
+        {getSuburb(entry.address || "") && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{getSuburb(entry.address || "")}</p>
+        )}
         {missingTransit && (
           <button
             onClick={handleFetchTransit}
@@ -354,7 +358,7 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
 }
 
 function Table(props: Props) {
-  const { transitMode, viewMode, refreshKey } = props;
+  const { transitMode, viewMode, refreshKey, groupBy } = props;
   const [data, setData] = useState([sampleEntry]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -421,6 +425,23 @@ function Table(props: Props) {
   }
 
   if (viewMode === 'list') {
+    if (groupBy === 'none') {
+      return (
+        <div className="rounded border border-gray-100 dark:border-gray-800 pb-24">
+          {visibleEntries.map(entry => (
+            <ListRow
+              key={entry.id}
+              entry={entry}
+              onEdit={() => handleEdit(entry.id)}
+              onDelete={() => handleDelete(entry.id)}
+              onClick={() => props.onCardClick(entry)}
+              onFetchTransit={() => handleFetchTransit(entry.id, entry.address)}
+              transitMode={transitMode}
+            />
+          ))}
+        </div>
+      )
+    }
     return (
       <div className="space-y-6 pb-24">
         {groups.map(({ suburb, entries }) => (
@@ -440,6 +461,23 @@ function Table(props: Props) {
               ))}
             </div>
           </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (groupBy === 'none') {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-24">
+        {visibleEntries.map(entry => (
+          <PropertyCard
+            key={entry.id}
+            entry={entry}
+            onEdit={() => handleEdit(entry.id)}
+            onDelete={() => handleDelete(entry.id)}
+            onClick={() => props.onCardClick(entry)}
+            transitMode={transitMode}
+          />
         ))}
       </div>
     )
