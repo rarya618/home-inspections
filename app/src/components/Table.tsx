@@ -316,7 +316,7 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
       </div>
 
       {/* Score */}
-      <div className={`shrink-0 ml-2 ${meta.scoreBg} ${meta.scoreText} rounded-full px-2.5 py-1 text-center`}>
+      <div className={`hidden sm:block shrink-0 ml-2 ${meta.scoreBg} ${meta.scoreText} rounded-full px-2.5 py-1 text-center`}>
         <p className="text-sm font-bold tabular-nums leading-none tracking-tight">{score}</p>
       </div>
 
