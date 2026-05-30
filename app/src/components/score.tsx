@@ -1,11 +1,11 @@
 import { Entry } from "./AddEntry";
 
 // returns the rent factor for property
-// neutral at $350/pp; cheaper = +2.5/dollar, dearer = -4/dollar, floor -600
+// neutral at $350/pp; cheaper = +2.5/dollar, dearer = -7/dollar, floor -900
 const getRentFactor = (rent: number) => {
   const delta = 350 - rent
   if (delta >= 0) return Math.round(delta * 2.5)
-  else return Math.max(Math.round(delta * 4), -600)
+  else return Math.max(Math.round(delta * 7), -900)
 }
 
 // returns the public transport factor for property
