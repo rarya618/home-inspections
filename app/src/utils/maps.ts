@@ -101,6 +101,7 @@ const getDistanceMatrix = (
         ...(departureTime && mode === google.maps.TravelMode.DRIVING
           ? { drivingOptions: { departureTime, trafficModel: google.maps.TrafficModel.BEST_GUESS } }
           : {}),
+        ...(mode === google.maps.TravelMode.DRIVING ? { avoidTolls: true } : {}),
       },
       (response, status) => {
         if (status !== google.maps.DistanceMatrixStatus.OK || !response) {
