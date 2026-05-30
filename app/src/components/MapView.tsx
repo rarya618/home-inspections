@@ -4,6 +4,7 @@ import { calculateScore } from './Score'
 import { getHouseEntries } from '../firebase/database'
 import { importLibrary } from '@googlemaps/js-api-loader'
 import { initMaps } from '../utils/maps'
+import { DESTINATIONS } from '../config/destinations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUpRightFromSquare, faExpand, faXmark } from '@fortawesome/free-solid-svg-icons'
 
@@ -90,14 +91,18 @@ export default function MapView({ onCardClick }: Props) {
     const placeMarkers = async () => {
       const geocoder = new google.maps.Geocoder()
 
-      const results = await Promise.allSettled(
-        entries.map(async entry => {
-          if (!entry.address) return null
-          const result = await geocoder.geocode({ address: entry.address })
-          const loc = result.results?.[0]?.geometry?.location
-          return loc ? { entry, loc } : null
-        })
-      )
+      const [results, uniResult, workResult] = await Promise.all([
+        Promise.allSettled(
+          entries.map(async entry => {
+            if (!entry.address) return null
+            const result = await geocoder.geocode({ address: entry.address })
+            const loc = result.results?.[0]?.geometry?.location
+            return loc ? { entry, loc } : null
+          })
+        ),
+        geocoder.geocode({ address: DESTINATIONS.uni }).then(r => r.results?.[0]?.geometry?.location ?? null).catch(() => null),
+        geocoder.geocode({ address: DESTINATIONS.work }).then(r => r.results?.[0]?.geometry?.location ?? null).catch(() => null),
+      ])
 
       const bounds = new google.maps.LatLngBounds()
       let hasMarkers = false
@@ -106,7 +111,7 @@ export default function MapView({ onCardClick }: Props) {
         if (r.status !== 'fulfilled' || !r.value) continue
         const { entry, loc } = r.value
         const score = entry.score ?? calculateScore(entry)
-        const color = getScoreColor(score)
+        const color = entry.isUnavailable ? '#9ca3af' : getScoreColor(score)
 
         const marker = new google.maps.Marker({
           position: loc,
@@ -115,7 +120,7 @@ export default function MapView({ onCardClick }: Props) {
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             fillColor: color,
-            fillOpacity: 1,
+            fillOpacity: entry.isUnavailable ? 0.5 : 1,
             strokeColor: 'white',
             strokeWeight: 2,
             scale: 8,
@@ -131,6 +136,37 @@ export default function MapView({ onCardClick }: Props) {
         bounds.extend(loc)
         hasMarkers = true
         markersRef.current.push(marker)
+      }
+
+      const destinationMarkerIcon = (color: string) => ({
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: 'white',
+        strokeWeight: 3,
+        scale: 11,
+      })
+
+      if (uniResult) {
+        new google.maps.Marker({
+          position: uniResult,
+          map,
+          title: 'Uni',
+          label: { text: 'U', color: 'white', fontSize: '11px', fontWeight: 'bold' },
+          icon: destinationMarkerIcon('#6366f1'),
+          zIndex: 10,
+        })
+      }
+
+      if (workResult) {
+        new google.maps.Marker({
+          position: workResult,
+          map,
+          title: 'Work',
+          label: { text: 'W', color: 'white', fontSize: '11px', fontWeight: 'bold' },
+          icon: destinationMarkerIcon('#0ea5e9'),
+          zIndex: 10,
+        })
       }
 
       if (hasMarkers) {
@@ -181,7 +217,7 @@ export default function MapView({ onCardClick }: Props) {
 
         return (
           <div
-            className="fixed w-72 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 p-4 z-20"
+            className={`fixed w-72 rounded-2xl shadow-2xl border p-4 z-20 ${entry.isUnavailable ? 'bg-gray-50 dark:bg-gray-900/60 border-gray-200 dark:border-gray-700 opacity-80' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'}`}
             style={{ top: posY, left: posX }}
           >
             {/* Dismiss */}
