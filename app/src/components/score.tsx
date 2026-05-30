@@ -279,8 +279,8 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   add("Train station", getTrainStationScore(trainPT, trainWalk, trainDrive))
 
   add("Utilities", getUtilFactor(entry.hasElectricity, entry.hasWater, entry.hasInternet))
-  add("Private kitchen", getKitchenFactor(!!entry.isKitchenPrivate))
-  add("Furnished", getFurnishedFactor(!!entry.isFurnished))
+  add(entry.isKitchenPrivate ? "Private kitchen" : "Shared kitchen", getKitchenFactor(!!entry.isKitchenPrivate))
+  add(entry.isFurnished ? "Furnished" : "Not furnished", getFurnishedFactor(!!entry.isFurnished))
   add("Cohabitation overhead", getCohabitationPenalty(beds))
   add("Finding housemates", getHousematePenalty(beds))
   add("GYG proximity", getGygFactor(entry.gyg ? parseInt(entry.gyg) : 0))
@@ -305,7 +305,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   }
 
   if (entry.carParks && parseInt(entry.carParks) >= 1) add("Car parks", 150)
-  add("Air con", entry.hasAirCon ? 150 : -100)
+  add(entry.hasAirCon ? "Air con" : "No air con", entry.hasAirCon ? 150 : -100)
   if (entry.isPetsAllowed) add("Pets allowed", 100)
   if (entry.hasGarage) add("Garage", 100)
   if (entry.hasLawn) add("Lawn (maintenance)", -150)
