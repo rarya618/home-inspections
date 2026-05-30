@@ -161,6 +161,7 @@ function UpdateEntryForm(props: FormProps) {
               <Toggle id="hasGarage" label="Garage" defaultChecked={data.hasGarage} />
               <Toggle id="hasLawn" label="Lawn" defaultChecked={data.hasLawn} />
               <Toggle id="isRented" label="Already rented" defaultChecked={data.isRented} />
+              <Toggle id="isUnavailable" label="Unavailable" defaultChecked={data.isUnavailable} />
             </div>
           </section>
 
