@@ -214,6 +214,14 @@ const getWalkBonus = (walkMins: number): number => {
   return 10
 }
 
+const getDriveBonus = (driveMins: number): number => {
+  if (driveMins <= 0 || driveMins > 25) return 0
+  if (driveMins <= 10) return 100
+  if (driveMins <= 15) return 75
+  if (driveMins <= 20) return 50
+  return 25
+}
+
 const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): number => {
   const walkable = walkMins > 0 && walkMins <= 50
   const modes: { score: number; weight: number }[] = []
@@ -223,7 +231,7 @@ const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): n
   if (modes.length === 0) return 0
   const totalWeight = modes.reduce((s, m) => s + m.weight, 0)
   const blendScore = modes.reduce((s, m) => s + (m.score * m.weight) / totalWeight, 0)
-  return blendScore + getWalkBonus(walkMins)
+  return blendScore + getWalkBonus(walkMins) + getDriveBonus(driveMins)
 }
 
 export type ScoreComponent = { label: string; value: number }
