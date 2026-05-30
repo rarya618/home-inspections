@@ -260,8 +260,9 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   const workPT    = entry.workPT    ? parseInt(entry.workPT)    : 0
   const workWalk  = entry.workWalk  ? parseInt(entry.workWalk)  : 0
   const workDrive = entry.workDrive ? parseInt(entry.workDrive) : 0
-  add("Work commute", getCommuteScore(workPT, workWalk, workDrive) - getWalkBonus(workWalk))
+  add("Work commute", getCommuteScore(workPT, workWalk, workDrive) - getWalkBonus(workWalk) - getDriveBonus(workDrive))
   add("Work walkability", getWalkBonus(workWalk))
+  add("Work drivability", getDriveBonus(workDrive))
 
   const groceryTimes = [
     entry.coles         ? parseInt(entry.coles)         : 0,
