@@ -19,36 +19,12 @@ type Props = {
 }
 
 const getScoreMeta = (score: number) => {
-  if (score >= 800) return {
-    gradient: "from-emerald-500 to-teal-600",
-    badge: "bg-white/20 text-white",
-    label: "Strong match",
-  };
-  if (score >= 650) return {
-    gradient: "from-teal-400 to-cyan-500",
-    badge: "bg-white/20 text-white",
-    label: "Good match",
-  };
-  if (score >= 450) return {
-    gradient: "from-sky-400 to-blue-500",
-    badge: "bg-white/20 text-white",
-    label: "Moderate match",
-  };
-  if (score >= 300) return {
-    gradient: "from-amber-400 to-yellow-500",
-    badge: "bg-white/20 text-white",
-    label: "Decent match",
-  };
-  if (score >= 0) return {
-    gradient: "from-orange-400 to-amber-500",
-    badge: "bg-white/20 text-white",
-    label: "Passable",
-  };
-  return {
-    gradient: "from-red-500 to-rose-600",
-    badge: "bg-white/20 text-white",
-    label: "Bad match",
-  };
+  if (score >= 800) return { scoreText: 'text-emerald-600 dark:text-emerald-400', scoreBg: 'bg-emerald-50 dark:bg-emerald-950/60', label: 'Strong match' };
+  if (score >= 650) return { scoreText: 'text-teal-600 dark:text-teal-400',       scoreBg: 'bg-teal-50 dark:bg-teal-950/60',     label: 'Good match' };
+  if (score >= 450) return { scoreText: 'text-sky-600 dark:text-sky-400',         scoreBg: 'bg-sky-50 dark:bg-sky-950/60',       label: 'Moderate match' };
+  if (score >= 300) return { scoreText: 'text-amber-600 dark:text-amber-400',     scoreBg: 'bg-amber-50 dark:bg-amber-950/60',   label: 'Decent match' };
+  if (score >= 0)   return { scoreText: 'text-orange-600 dark:text-orange-400',   scoreBg: 'bg-orange-50 dark:bg-orange-950/60', label: 'Passable' };
+  return               { scoreText: 'text-red-600 dark:text-red-400',             scoreBg: 'bg-red-50 dark:bg-red-950/60',       label: 'Bad match' };
 };
 
 function StatTile({ icon, label, value }: { icon: IconDefinition, label: string, value: string | undefined }) {
