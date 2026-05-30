@@ -254,8 +254,9 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   const uniPT    = entry.uniPT    ? parseInt(entry.uniPT)    : 0
   const uniWalk  = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0
   const uniDrive = entry.uniDrive ? parseInt(entry.uniDrive) : 0
-  add("Uni commute", getCommuteScore(uniPT, uniWalk, uniDrive) - getWalkBonus(uniWalk))
+  add("Uni commute", getCommuteScore(uniPT, uniWalk, uniDrive) - getWalkBonus(uniWalk) - getDriveBonus(uniDrive))
   add("Uni walkability", getWalkBonus(uniWalk))
+  add("Uni drivability", getDriveBonus(uniDrive))
 
   const workPT    = entry.workPT    ? parseInt(entry.workPT)    : 0
   const workWalk  = entry.workWalk  ? parseInt(entry.workWalk)  : 0
