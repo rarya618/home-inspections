@@ -32,6 +32,7 @@ type Props = {
   groupBy: 'none' | 'suburb' | 'uni' | 'work',
   search: string,
   filters: Filters,
+  sortBy: 'score' | 'rent-asc' | 'rent-desc',
 }
 
 const getScoreMeta = (score: number) => {
@@ -82,6 +83,8 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
 }) {
   const score = entry.score ?? calculateScore(entry);
   const meta = getScoreMeta(score);
+  const hasStaleDrive = (!!entry.uniDrive || !!entry.workDrive || !!entry.trainDrive) &&
+    (!entry.transitVersion || entry.transitVersion < 2);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -184,6 +187,16 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
         </div>
       </div>
 
+      {/* Stale drive times warning */}
+      {hasStaleDrive && (
+        <div className="px-4 py-1.5 border-t border-orange-100 dark:border-orange-900/40 bg-orange-50 dark:bg-orange-950/30">
+          <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-1">
+            <FontAwesomeIcon icon={faRotate} className="w-2.5" />
+            Drive times may include tolls
+          </span>
+        </div>
+      )}
+
       {/* Footer: transit + features */}
       {(topStats.length > 0 || features.length > 0) && (
         <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
@@ -254,6 +267,9 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
   const missingTransit = !entry.uniPT && !entry.uniWalk && !entry.uniDrive &&
                          !entry.workPT && !entry.workWalk && !entry.workDrive &&
                          !entry.trainPT && !entry.trainWalk && !entry.trainDrive;
+  const hasStaleDrive = !missingTransit &&
+    (!!entry.uniDrive || !!entry.workDrive || !!entry.trainDrive) &&
+    (!entry.transitVersion || entry.transitVersion < 2);
   const [fetchingTransit, setFetchingTransit] = useState(false);
 
   const handleFetchTransit = async (e: React.MouseEvent) => {
@@ -272,9 +288,9 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
     >
       {/* Address */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{getStreet(entry.address || "") || "—"}</p>
+        <p className="text-[15px] font-semibold text-gray-900 dark:text-white truncate">{getStreet(entry.address || "") || "—"}</p>
         {getSuburb(entry.address || "") && (
-          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{getSuburb(entry.address || "")}</p>
+          <p className="text-[13px] text-gray-600 dark:text-gray-300 truncate">{getSuburb(entry.address || "")}</p>
         )}
         {missingTransit && (
           <button
@@ -284,6 +300,16 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
           >
             <FontAwesomeIcon icon={faRotate} className={fetchingTransit ? 'animate-spin' : ''} />
             {fetchingTransit ? 'Fetching…' : 'No travel times'}
+          </button>
+        )}
+        {hasStaleDrive && (
+          <button
+            onClick={handleFetchTransit}
+            disabled={fetchingTransit}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/50 hover:bg-orange-100 dark:hover:bg-orange-900/50 px-1.5 py-0.5 rounded mt-0.5 transition-colors disabled:opacity-50"
+          >
+            <FontAwesomeIcon icon={faRotate} className={fetchingTransit ? 'animate-spin' : ''} />
+            {fetchingTransit ? 'Fetching…' : 'Drive times include tolls'}
           </button>
         )}
       </div>
@@ -374,7 +400,7 @@ const FEATURE_PREDICATES: Record<string, (e: Entry) => boolean> = {
 }
 
 function Table(props: Props) {
-  const { transitMode, viewMode, refreshKey, groupBy, search, filters } = props;
+  const { transitMode, viewMode, refreshKey, groupBy, search, filters, sortBy } = props;
   const [data, setData] = useState([sampleEntry]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -405,6 +431,7 @@ function Table(props: Props) {
   const q = search.trim().toLowerCase();
   const visibleEntries = [...data]
     .filter(e => !e.isRented)
+    .filter(e => !e.isUnavailable)
     .filter(e => !q || (e.address || '').toLowerCase().includes(q))
     .filter(e => [...filters.features].every(key => FEATURE_PREDICATES[key]?.(e)))
     .filter(e => {
@@ -424,7 +451,11 @@ function Table(props: Props) {
       }
       return true
     })
-    .sort((a, b) => (b.score ?? calculateScore(b)) - (a.score ?? calculateScore(a)));
+    .sort((a, b) => {
+      if (sortBy === 'rent-asc')  return parseInt(a.rent) - parseInt(b.rent)
+      if (sortBy === 'rent-desc') return parseInt(b.rent) - parseInt(a.rent)
+      return (b.score ?? calculateScore(b)) - (a.score ?? calculateScore(a))
+    });
 
   if (visibleEntries.length === 0) {
     return (
@@ -483,7 +514,7 @@ function Table(props: Props) {
   if (viewMode === 'list') {
     if (groupBy === 'none') {
       return (
-        <div className="rounded border border-gray-100 dark:border-gray-800 pb-24">
+        <div className="rounded border border-gray-100 dark:border-gray-800 pb-4">
           {visibleEntries.map(entry => (
             <ListRow
               key={entry.id}
@@ -499,7 +530,7 @@ function Table(props: Props) {
       )
     }
     return (
-      <div className="space-y-6 pb-24">
+      <div className="space-y-6 pb-4">
         {groups.map(({ label, entries }) => (
           <div key={label}>
             <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-0">{label}</h2>
@@ -524,7 +555,7 @@ function Table(props: Props) {
 
   if (groupBy === 'none') {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-24">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-4">
         {visibleEntries.map(entry => (
           <PropertyCard
             key={entry.id}
@@ -540,7 +571,7 @@ function Table(props: Props) {
   }
 
   return (
-    <div className="space-y-8 pb-24">
+    <div className="space-y-8 pb-4">
       {groups.map(({ label, entries }) => (
         <div key={label}>
           <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-1">{label}</h2>

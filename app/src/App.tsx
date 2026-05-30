@@ -8,14 +8,14 @@ import PropertyDetail from './components/PropertyDetail';
 import { Entry } from './components/AddEntry';
 import { ListingPrefill } from './utils/fetchListing';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableCells, faList, faMap, faArrowsRotate, faChevronDown, faMagnifyingGlass, faSlidersH } from '@fortawesome/free-solid-svg-icons';
+import { faTableCells, faList, faMap, faArrowsRotate, faMagnifyingGlass, faSlidersH, faBus, faCar, faArrowDownShortWide, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 
 // set page title
 export function useTitle(title: string) {
 	useEffect(() => {
 		const prevTitle = document.title;
 
-		document.title = title + " - HouseX";
+		document.title = title + " - HouseRank";
 
 		return () => {
 			document.title = prevTitle
@@ -223,10 +223,15 @@ function FilterPanel({ filters, onChange }: {
   )
 }
 
-function PillDropdown<T extends string>({ value, options, onChange }: {
-  value: T,
-  options: { value: T; label: string }[],
-  onChange: (v: T) => void,
+const SORT_OPTIONS: { value: 'score' | 'rent-asc' | 'rent-desc'; label: string }[] = [
+  { value: 'score',     label: 'Score' },
+  { value: 'rent-asc',  label: 'Rent: low to high' },
+  { value: 'rent-desc', label: 'Rent: high to low' },
+]
+
+function SortPanel({ value, onChange }: {
+  value: 'score' | 'rent-asc' | 'rent-desc'
+  onChange: (v: 'score' | 'rent-asc' | 'rent-desc') => void
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -239,33 +244,113 @@ function PillDropdown<T extends string>({ value, options, onChange }: {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const selected = options.find(o => o.value === value)
+  const isActive = value !== 'score'
 
   return (
-    <div ref={ref} className="relative w-[140px]">
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center justify-between gap-1.5 w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-full px-3 py-2.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        className={`flex items-center gap-2 px-3 py-2.5 rounded-full text-xs font-semibold transition-all ${
+          isActive
+            ? 'bg-indigo-600 text-white'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+        }`}
       >
-        {selected?.label}
-        <FontAwesomeIcon icon={faChevronDown} className={`w-2.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <FontAwesomeIcon icon={faArrowDownShortWide} className="w-3" />
+        Sort
       </button>
+
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 z-50 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg overflow-hidden w-full">
-          {options.map(o => (
-            <button
-              key={o.value}
-              onClick={() => { onChange(o.value); setOpen(false) }}
-              className={`w-full text-left px-3.5 py-2 text-xs font-semibold transition-colors ${o.value === value ? 'text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            >
-              {o.label}
-            </button>
-          ))}
+        <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+            <span className="text-sm font-bold text-gray-900 dark:text-white">Sort by</span>
+          </div>
+          <div className="p-2">
+            {SORT_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false) }}
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  value === opt.value
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
   )
 }
+
+const GROUP_OPTIONS: { value: 'none' | 'suburb' | 'uni' | 'work'; label: string }[] = [
+  { value: 'none',   label: 'No grouping' },
+  { value: 'suburb', label: 'Suburb' },
+  { value: 'uni',    label: 'Uni proximity' },
+  { value: 'work',   label: 'Work proximity' },
+]
+
+function GroupPanel({ value, onChange }: {
+  value: 'none' | 'suburb' | 'uni' | 'work'
+  onChange: (v: 'none' | 'suburb' | 'uni' | 'work') => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const isActive = value !== 'none'
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={`flex items-center gap-2 px-3 py-2.5 rounded-full text-xs font-semibold transition-all ${
+          isActive
+            ? 'bg-indigo-600 text-white'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+        }`}
+      >
+        <FontAwesomeIcon icon={faLayerGroup} className="w-3" />
+        Group
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+            <span className="text-sm font-bold text-gray-900 dark:text-white">Group by</span>
+          </div>
+          <div className="p-2">
+            {GROUP_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false) }}
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  value === opt.value
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+
 
 // main app
 function App() {
@@ -277,9 +362,13 @@ function App() {
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
   const [groupBy, setGroupBy] = useState<'none' | 'suburb' | 'uni' | 'work'>('none')
+  const [sortBy, setSortBy] = useState<'score' | 'rent-asc' | 'rent-desc'>('score')
   const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [search, setSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
 
   // Handle ?import= param set by the Chrome extension
@@ -343,7 +432,7 @@ function App() {
         {/* Row 1: always visible */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className={`text-2xl font-extrabold text-gray-900 ${viewMode !== 'map' ? 'dark:text-white' : ''}`}>HouseX</h1>
+            <h1 className={`text-2xl font-extrabold text-gray-900 ${viewMode !== 'map' ? 'dark:text-white' : ''}`}>HouseRank</h1>
             <button
               onClick={() => setRefreshKey(k => k + 1)}
               className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400 transition-colors rounded-lg"
@@ -356,41 +445,57 @@ function App() {
             {/* Desktop-only controls */}
             {viewMode !== 'map' && (
               <>
-              <div className="hidden md:block relative">
-                <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-3 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search…"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="bg-gray-100 dark:bg-gray-800 rounded-full pl-8 pr-3 py-2.5 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-48"
-                />
+              <div
+                ref={searchRef}
+                className="hidden md:block relative"
+                onBlur={e => {
+                  if (!searchRef.current?.contains(e.relatedTarget as Node)) {
+                    if (!search) setSearchOpen(false)
+                  }
+                }}
+              >
+                {searchOpen ? (
+                  <>
+                    <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-3 pointer-events-none" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search…"
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Escape') { setSearch(''); setSearchOpen(false) } }}
+                      className="bg-gray-100 dark:bg-gray-800 rounded-full pl-8 pr-3 py-2.5 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-48"
+                    />
+                  </>
+                ) : (
+                  <button
+                    onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 0) }}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full text-xs font-semibold transition-all ${search ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                  >
+                    <FontAwesomeIcon icon={faMagnifyingGlass} className="w-3" />
+                    Search
+                  </button>
+                )}
               </div>
-              <div className="hidden md:block"><FilterPanel filters={filters} onChange={setFilters} /></div>
               <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
                 <button
                   onClick={() => setTransitMode('pt')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'pt' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                >PT</button>
+                ><FontAwesomeIcon icon={faBus} /></button>
                 <button
                   onClick={() => setTransitMode('drive')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'drive' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
-                >Drive</button>
+                ><FontAwesomeIcon icon={faCar} /></button>
               </div>
               <div className="hidden md:block">
-                <PillDropdown
-                  value={groupBy}
-                  options={[
-                    { value: 'none', label: 'No grouping' },
-                    { value: 'suburb', label: 'Suburb' },
-                    { value: 'uni', label: 'Uni proximity' },
-                    { value: 'work', label: 'Work proximity' },
-                  ]}
-                  onChange={setGroupBy}
-                />
+                <SortPanel value={sortBy} onChange={setSortBy} />
+              </div>
+              <div className="hidden md:block">
+                <GroupPanel value={groupBy} onChange={setGroupBy} />
               </div>
               </>
             )}
+            <div className="hidden md:block"><FilterPanel filters={filters} onChange={setFilters} /></div>
             {/* View toggle — always visible */}
             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
               <button
@@ -409,15 +514,20 @@ function App() {
             {/* Add button — rightmost */}
             <button
               onClick={changeAddFormDisplay}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-3 py-2.5 rounded-full shadow-sm transition-all"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-5 py-[8px] rounded-full shadow-sm transition-all"
             >
-              <span className="text-sm leading-none">+</span>
+              <span className="text-lg leading-none">+</span>
               <span className="hidden sm:inline">Add</span>
             </button>
           </div>
         </div>
 
         {/* Row 2: mobile only */}
+        {viewMode === 'map' && (
+          <div className="flex md:hidden justify-end mt-3">
+            <FilterPanel filters={filters} onChange={setFilters} />
+          </div>
+        )}
         {viewMode !== 'map' && (
           <div className="flex md:hidden items-center gap-2 mt-3">
             <div className="relative flex-1">
@@ -447,7 +557,7 @@ function App() {
       {viewMode === 'map' ? (
         <MapView onCardClick={openDetail} />
       ) : (
-        <div className="px-4 pt-4">
+        <div className="px-4">
           <Table
             currentEntry={currentEntry}
             setCurrentEntry={(newEntry: string) => setCurrentEntry(newEntry)}
@@ -459,6 +569,7 @@ function App() {
             groupBy={groupBy}
             search={search}
             filters={filters}
+            sortBy={sortBy}
           />
         </div>
       )}
