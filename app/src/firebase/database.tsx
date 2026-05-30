@@ -18,11 +18,13 @@ const addEntry = async (data: {}) => {
 };
 
 // Saves entry immediately, then fetches transit times in the background and patches them in
+const TRANSIT_VERSION = 2;
+
 const addEntryWithTransit = async (data: Record<string, any>): Promise<void> => {
   const docRef = await addDoc(collection(db, "data"), data);
   fetchTransitTimes(data.address).then(times => {
     if (Object.keys(times).length > 0) {
-      updateDoc(doc(db, "data", docRef.id), times as Record<string, any>);
+      updateDoc(doc(db, "data", docRef.id), { ...times, transitVersion: TRANSIT_VERSION } as Record<string, any>);
     }
   });
 };
@@ -30,7 +32,7 @@ const addEntryWithTransit = async (data: Record<string, any>): Promise<void> => 
 const refreshTransitTimes = async (entryId: string, address: string): Promise<TransitTimes> => {
   const times = await fetchTransitTimes(address);
   if (Object.keys(times).length > 0) {
-    await updateDoc(doc(db, "data", entryId), times as Record<string, any>);
+    await updateDoc(doc(db, "data", entryId), { ...times, transitVersion: TRANSIT_VERSION } as Record<string, any>);
   }
   return times;
 };
