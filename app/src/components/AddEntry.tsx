@@ -45,6 +45,8 @@ export const fields: Field[] = [
   {id: "hasWater", label: "Water?", dataType: "checkbox"},
   {id: "hasInternet", label: "Internet?", dataType: "checkbox"},
   {id: "hasLawn", label: "Lawn?", dataType: "checkbox"},
+  {id: "hasPool", label: "Pool?", dataType: "checkbox"},
+  {id: "hasGym", label: "Gym?", dataType: "checkbox"},
   {id: "isRented", label: "Rented?", dataType: "checkbox"},
   {id: "isUnavailable", label: "Unavailable?", dataType: "checkbox"}
 ]
@@ -79,6 +81,8 @@ export type Entry = {
   isPetsAllowed?: boolean,
   hasGarage?: boolean,
   hasLawn?: boolean,
+  hasPool?: boolean,
+  hasGym?: boolean,
   uniDrive?: string,
   workDrive?: string,
   rent: string,
@@ -216,6 +220,8 @@ function AddEntryForm(props: FormProps) {
             <Toggle id="hasAirCon" label="Air conditioning" defaultChecked={prefill?.hasAirCon} />
             <Toggle id="isPetsAllowed" label="Pets allowed" defaultChecked={prefill?.isPetsAllowed} />
             <Toggle id="hasGarage" label="Garage" defaultChecked={prefill?.hasGarage} />
+            <Toggle id="hasPool" label="Pool" defaultChecked={prefill?.hasPool} />
+            <Toggle id="hasGym" label="Gym" defaultChecked={prefill?.hasGym} />
             <Toggle id="hasLawn" label="Lawn" />
             <Toggle id="isRented" label="Already rented" />
             <Toggle id="isUnavailable" label="Unavailable" />

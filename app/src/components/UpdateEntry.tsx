@@ -159,6 +159,8 @@ function UpdateEntryForm(props: FormProps) {
               <Toggle id="hasAirCon" label="Air conditioning" defaultChecked={data.hasAirCon} />
               <Toggle id="isPetsAllowed" label="Pets allowed" defaultChecked={data.isPetsAllowed} />
               <Toggle id="hasGarage" label="Garage" defaultChecked={data.hasGarage} />
+              <Toggle id="hasPool" label="Pool" defaultChecked={data.hasPool} />
+              <Toggle id="hasGym" label="Gym" defaultChecked={data.hasGym} />
               <Toggle id="hasLawn" label="Lawn" defaultChecked={data.hasLawn} />
               <Toggle id="isRented" label="Already rented" defaultChecked={data.isRented} />
               <Toggle id="isUnavailable" label="Unavailable" defaultChecked={data.isUnavailable} />
