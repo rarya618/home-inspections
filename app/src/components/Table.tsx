@@ -75,11 +75,12 @@ const getScoreMeta = (score: number) => {
   };
 };
 
-function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
+function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }: {
   entry: Entry,
   onEdit: () => void,
   onDelete: () => void,
   onClick: () => void,
+  onStar: () => void,
   transitMode: 'pt' | 'drive',
 }) {
   const score = entry.score ?? calculateScore(entry);
@@ -143,7 +144,17 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
             {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faCar} className="w-3" />{entry.carParks}</span>}
           </div>
         </div>
-        <div className="relative shrink-0" ref={menuRef}>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={e => { e.stopPropagation(); onStar(); }}
+            className="p-1.5 transition-colors rounded-md"
+          >
+            <FontAwesomeIcon
+              icon={entry.isStarred ? faStar : faStarOutline}
+              className={`w-3.5 ${entry.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-400'}`}
+            />
+          </button>
+          <div className="relative" ref={menuRef}>
           <button
             onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
             className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors rounded-md"
@@ -169,11 +180,12 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
               </button>
             </div>
           )}
+          </div>
         </div>
       </div>
 
-      {/* Rent + score */}
-      <div className="px-4 pt-2 pb-4 flex items-end justify-between">
+      {/* Rent */}
+      <div className="px-4 pt-2 pb-4 flex items-end">
         <div>
           <div className="flex items-baseline gap-0.5">
             <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
@@ -182,9 +194,6 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
           {ppRent && (
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>
           )}
-        </div>
-        <div className={`${meta.scoreBg} ${meta.scoreText} rounded-full px-3 py-1.5 text-center`}>
-          <p className="text-base font-bold tabular-nums leading-none tracking-tight">{score}</p>
         </div>
       </div>
 
@@ -341,11 +350,6 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, onStar, tra
       <div className="w-24 shrink-0 text-right">
         <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">${entry.rent}<span className="text-xs font-normal text-gray-400 dark:text-gray-500">/wk</span></p>
         {ppRent ? <p className="text-xs text-gray-400 dark:text-gray-500">${ppRent}/pp</p> : <p className="text-xs invisible">—</p>}
-      </div>
-
-      {/* Score */}
-      <div className={`hidden sm:block shrink-0 ml-2 ${meta.scoreBg} ${meta.scoreText} rounded-full px-2.5 py-1 text-center`}>
-        <p className="text-sm font-bold tabular-nums leading-none tracking-tight">{score}</p>
       </div>
 
       {/* Star button */}
@@ -600,6 +604,7 @@ function Table(props: Props) {
             onEdit={() => handleEdit(entry.id)}
             onDelete={() => handleDelete(entry.id)}
             onClick={() => props.onCardClick(entry)}
+            onStar={() => handleStar(entry)}
             transitMode={transitMode}
           />
         ))}
@@ -620,6 +625,7 @@ function Table(props: Props) {
                 onEdit={() => handleEdit(entry.id)}
                 onDelete={() => handleDelete(entry.id)}
                 onClick={() => props.onCardClick(entry)}
+                onStar={() => handleStar(entry)}
                 transitMode={transitMode}
               />
             ))}
