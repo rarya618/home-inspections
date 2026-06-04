@@ -1,11 +1,21 @@
 import { Entry } from "./AddEntry";
 
 // returns the rent factor for property
-// neutral at $350/pp; cheaper = +2.5/dollar, dearer = -7/dollar, floor -900
-const getRentFactor = (rent: number) => {
-  const delta = 350 - rent
+// neutral at $350/pp; cheaper = +2.5/dollar
+// dearer: progressive tiers — -9/dollar up to $50 over, -14/dollar $50–$100 over, -20/dollar beyond
+const getRentFactor = (ppRent: number) => {
+  const delta = 350 - ppRent
   if (delta >= 0) return Math.round(delta * 2.5)
-  else return Math.max(Math.round(delta * 7), -900)
+  const over = -delta
+  let penalty = 0
+  if (over <= 50) {
+    penalty = over * 9
+  } else if (over <= 100) {
+    penalty = 50 * 9 + (over - 50) * 14
+  } else {
+    penalty = 50 * 9 + 50 * 14 + (over - 100) * 20
+  }
+  return -Math.round(penalty)
 }
 
 // returns the public transport factor for property
@@ -16,12 +26,11 @@ const getPTFactor = (minutesTaken: number, _isMisc: boolean) => {
   if (minutesTaken <= 25) return 120
   if (minutesTaken <= 30) return 80
   if (minutesTaken <= 35) return 40
-  if (minutesTaken <= 40) return 0
-  if (minutesTaken <= 50) return -20
-  if (minutesTaken <= 60) return -80
-  if (minutesTaken <= 75) return -160
-  if (minutesTaken <= 90) return -240
-  return -320
+  if (minutesTaken <= 50) return 0
+  if (minutesTaken <= 60) return -120
+  if (minutesTaken <= 75) return -240
+  if (minutesTaken <= 90) return -380
+  return -520
 }
 
 // returns the walking factor for property
@@ -35,7 +44,7 @@ const getWalkingFactor = (minutesTaken: number) => {
   if (minutesTaken <= 30) return 10
   if (minutesTaken <= 35) return 0
   if (minutesTaken <= 45) return -40
-  return -100
+  return -250
 }
 
 // returns the grocery factor
@@ -128,11 +137,11 @@ const getDrivingFactor = (minutesTaken: number) => {
   if (minutesTaken <= 25) return 30
   if (minutesTaken <= 30) return -20
   if (minutesTaken <= 40) return -90
-  if (minutesTaken <= 50) return -130
-  if (minutesTaken <= 60) return -170
-  if (minutesTaken <= 75) return -210
-  if (minutesTaken <= 90) return -250
-  return -300
+  if (minutesTaken <= 50) return -220
+  if (minutesTaken <= 60) return -340
+  if (minutesTaken <= 75) return -460
+  if (minutesTaken <= 90) return -560
+  return -650
 }
 
 // returns the gyg factor for property
@@ -195,6 +204,14 @@ const getTrainStationDriveFactor = (mins: number): number => {
   return -100
 }
 
+// extra bonus for walking to a train station — on top of the blended score
+const getTrainWalkBonus = (walkMins: number): number => {
+  if (walkMins <= 0) return 0
+  if (walkMins <= 5)  return 150
+  if (walkMins <= 10) return 75
+  return 0
+}
+
 const getTrainStationScore = (ptMins: number, walkMins: number, driveMins: number): number => {
   const modes: { score: number; weight: number }[] = []
   if (ptMins > 0)    modes.push({ score: getTrainStationPTFactor(ptMins),    weight: 0.4 })
@@ -234,6 +251,15 @@ const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): n
   return blendScore + getWalkBonus(walkMins) + getDriveBonus(driveMins)
 }
 
+const COMMUNITY_SUBURBS = ["parramatta", "redfern"]
+const COMMUNITY_EXCLUSIONS = ["north parramatta"]
+
+const getCommunityBonus = (address: string): number => {
+  const lower = address.toLowerCase()
+  if (COMMUNITY_EXCLUSIONS.some(e => lower.includes(e))) return 0
+  return COMMUNITY_SUBURBS.some(s => lower.includes(s)) ? 150 : 0
+}
+
 export type ScoreComponent = { label: string; value: number }
 
 // returns per-factor breakdown of the score
@@ -246,6 +272,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   }
 
   if (entry.address == "2019/185-211 Broadway") add("Address bonus", 200)
+  add("Community bonus", getCommunityBonus(entry.address))
 
   const beds = entry.bedrooms ? Math.max(1, parseInt(entry.bedrooms)) : 1
   const rent = Math.round(parseInt(entry.rent) / beds)
@@ -278,6 +305,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   const trainWalk  = entry.trainWalk  ? parseInt(entry.trainWalk)  : 0
   const trainDrive = entry.trainDrive ? parseInt(entry.trainDrive) : 0
   add("Train station", getTrainStationScore(trainPT, trainWalk, trainDrive))
+  add("Train walk proximity", getTrainWalkBonus(trainWalk))
 
   add("Utilities", getUtilFactor(entry.hasElectricity, entry.hasWater, entry.hasInternet))
   add(entry.isKitchenPrivate ? "Private kitchen" : "Shared kitchen", getKitchenFactor(!!entry.isKitchenPrivate))
@@ -309,6 +337,8 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   add(entry.hasAirCon ? "Air con" : "No air con", entry.hasAirCon ? 150 : -100)
   if (entry.isPetsAllowed) add("Pets allowed", 100)
   if (entry.hasGarage) add("Garage", 100)
+  if (entry.hasPool) add("Pool", 100)
+  if (entry.hasGym) add("Gym", 75)
   if (entry.hasLawn) add("Lawn (maintenance)", -150)
   if (parseInt(entry.rent) / 2 <= 350) add("2-share value", 100)
   if (entry.size)        add("Size",        parseInt(entry.size) * 50)
@@ -329,6 +359,7 @@ const calculateScore = (entry: Entry) => {
     if (entry.address == "2019/185-211 Broadway") {
       score += 200
     }
+    score += getCommunityBonus(entry.address)
 
     // add rent score (per person: total rent ÷ bedrooms)
     const beds = entry.bedrooms ? Math.max(1, parseInt(entry.bedrooms)) : 1
@@ -362,6 +393,7 @@ const calculateScore = (entry: Entry) => {
     const trainWalkMinutes  = entry.trainWalk  ? parseInt(entry.trainWalk)  : 0
     const trainDriveMinutes = entry.trainDrive ? parseInt(entry.trainDrive) : 0
     score += getTrainStationScore(trainPTMinutes, trainWalkMinutes, trainDriveMinutes)
+    score += getTrainWalkBonus(trainWalkMinutes)
 
     // add utilities score
     score += getUtilFactor(entry.hasElectricity, entry.hasWater, entry.hasInternet)
@@ -410,6 +442,9 @@ const calculateScore = (entry: Entry) => {
 
     // add garage score
     if (entry.hasGarage) score += 100
+
+    if (entry.hasPool) score += 100
+    if (entry.hasGym) score += 75
 
     // lawn penalty
     if (entry.hasLawn) score -= 150
