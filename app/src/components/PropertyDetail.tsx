@@ -61,7 +61,7 @@ function TransitSplit({ tiles }: { tiles: { icon: IconDefinition; label: string;
         <div key={t.label} className="flex-1 flex items-center gap-2.5 px-3 py-3">
           <FontAwesomeIcon icon={t.icon} className="text-gray-400 dark:text-gray-500 w-3.5 shrink-0" />
           <div>
-            <p className="text-base font-bold text-gray-900 dark:text-white tabular-nums leading-none">{t.value}<span className="text-xs font-normal text-gray-400 ml-0.5">m</span></p>
+            <p className="text-base font-bold text-gray-900 dark:text-white tabular-nums leading-none">{t.value}<span className="text-xs font-normal text-gray-400 ml-0.5">min</span></p>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{t.label}</p>
           </div>
         </div>
