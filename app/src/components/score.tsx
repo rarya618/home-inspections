@@ -1,19 +1,19 @@
 import { Entry } from "./AddEntry";
 
 // returns the rent factor for property
-// neutral at $350/pp; cheaper = +2.5/dollar
-// dearer: progressive tiers — -9/dollar up to $50 over, -14/dollar $50–$100 over, -20/dollar beyond
+// neutral at $350/pp; cheaper = +3.5/dollar
+// dearer: progressive tiers — -5/dollar up to $50 over, -8/dollar $50–$100 over, -11/dollar beyond
 const getRentFactor = (ppRent: number) => {
   const delta = 350 - ppRent
-  if (delta >= 0) return Math.round(delta * 2.5)
+  if (delta >= 0) return Math.round(delta * 3.5)
   const over = -delta
   let penalty = 0
   if (over <= 50) {
-    penalty = over * 9
+    penalty = over * 5
   } else if (over <= 100) {
-    penalty = 50 * 9 + (over - 50) * 14
+    penalty = 50 * 5 + (over - 50) * 8
   } else {
-    penalty = 50 * 9 + 50 * 14 + (over - 100) * 20
+    penalty = 50 * 5 + 50 * 8 + (over - 100) * 11
   }
   return -Math.round(penalty)
 }
@@ -27,10 +27,10 @@ const getPTFactor = (minutesTaken: number, _isMisc: boolean) => {
   if (minutesTaken <= 30) return 80
   if (minutesTaken <= 35) return 40
   if (minutesTaken <= 50) return 0
-  if (minutesTaken <= 60) return -120
-  if (minutesTaken <= 75) return -240
-  if (minutesTaken <= 90) return -380
-  return -520
+  if (minutesTaken <= 60) return -200
+  if (minutesTaken <= 75) return -380
+  if (minutesTaken <= 90) return -560
+  return -720
 }
 
 // returns the walking factor for property
@@ -207,8 +207,8 @@ const getTrainStationDriveFactor = (mins: number): number => {
 // extra bonus for walking to a train station — on top of the blended score
 const getTrainWalkBonus = (walkMins: number): number => {
   if (walkMins <= 0) return 0
-  if (walkMins <= 5)  return 150
-  if (walkMins <= 10) return 75
+  if (walkMins <= 5)  return 200
+  if (walkMins <= 10) return 120
   return 0
 }
 
@@ -223,11 +223,10 @@ const getTrainStationScore = (ptMins: number, walkMins: number, driveMins: numbe
 }
 
 const getWalkBonus = (walkMins: number): number => {
-  if (walkMins <= 0 || walkMins > 50) return 0
-  if (walkMins <= 10) return 150
-  if (walkMins <= 20) return 100
-  if (walkMins <= 30) return 50
-  if (walkMins <= 40) return 25
+  if (walkMins <= 0 || walkMins > 40) return 0
+  if (walkMins <= 10) return 75
+  if (walkMins <= 20) return 50
+  if (walkMins <= 30) return 25
   return 10
 }
 
@@ -257,7 +256,7 @@ const COMMUNITY_EXCLUSIONS = ["north parramatta"]
 const getCommunityBonus = (address: string): number => {
   const lower = address.toLowerCase()
   if (COMMUNITY_EXCLUSIONS.some(e => lower.includes(e))) return 0
-  return COMMUNITY_SUBURBS.some(s => lower.includes(s)) ? 150 : 0
+  return COMMUNITY_SUBURBS.some(s => lower.includes(s)) ? 200 : 0
 }
 
 export type ScoreComponent = { label: string; value: number }
