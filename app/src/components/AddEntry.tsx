@@ -220,8 +220,8 @@ function AddEntryForm(props: FormProps) {
             <Toggle id="hasAirCon" label="Air conditioning" defaultChecked={prefill?.hasAirCon} />
             <Toggle id="isPetsAllowed" label="Pets allowed" defaultChecked={prefill?.isPetsAllowed} />
             <Toggle id="hasGarage" label="Garage" defaultChecked={prefill?.hasGarage} />
-            <Toggle id="hasPool" label="Pool" defaultChecked={prefill?.hasPool} />
-            <Toggle id="hasGym" label="Gym" defaultChecked={prefill?.hasGym} />
+            <Toggle id="hasPool" label="Pool" />
+            <Toggle id="hasGym" label="Gym" />
             <Toggle id="hasLawn" label="Lawn" />
             <Toggle id="isRented" label="Already rented" />
             <Toggle id="isUnavailable" label="Unavailable" />
