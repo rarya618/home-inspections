@@ -33,6 +33,7 @@ type Props = {
   search: string,
   filters: Filters,
   sortBy: 'score' | 'rent-asc' | 'rent-desc',
+  starsFirst: boolean,
 }
 
 const getScoreMeta = (score: number) => {
@@ -412,7 +413,7 @@ const FEATURE_PREDICATES: Record<string, (e: Entry) => boolean> = {
 }
 
 function Table(props: Props) {
-  const { transitMode, viewMode, refreshKey, groupBy, search, filters, sortBy } = props;
+  const { transitMode, viewMode, refreshKey, groupBy, search, filters, sortBy, starsFirst } = props;
   const [data, setData] = useState([sampleEntry]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -464,6 +465,10 @@ function Table(props: Props) {
       return true
     })
     .sort((a, b) => {
+      if (starsFirst) {
+        const starDiff = (b.isStarred ? 1 : 0) - (a.isStarred ? 1 : 0)
+        if (starDiff !== 0) return starDiff
+      }
       if (sortBy === 'rent-asc')  return parseInt(a.rent) - parseInt(b.rent)
       if (sortBy === 'rent-desc') return parseInt(b.rent) - parseInt(a.rent)
       return (b.score ?? calculateScore(b)) - (a.score ?? calculateScore(a))

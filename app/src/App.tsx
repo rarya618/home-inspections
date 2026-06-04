@@ -229,9 +229,11 @@ const SORT_OPTIONS: { value: 'score' | 'rent-asc' | 'rent-desc'; label: string }
   { value: 'rent-desc', label: 'Rent: high to low' },
 ]
 
-function SortPanel({ value, onChange }: {
+function SortPanel({ value, onChange, starsFirst, onToggleStars }: {
   value: 'score' | 'rent-asc' | 'rent-desc'
   onChange: (v: 'score' | 'rent-asc' | 'rent-desc') => void
+  starsFirst: boolean
+  onToggleStars: () => void
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -244,7 +246,7 @@ function SortPanel({ value, onChange }: {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const isActive = value !== 'score'
+  const isActive = value !== 'score' || !starsFirst
 
   return (
     <div ref={ref} className="relative">
@@ -279,6 +281,17 @@ function SortPanel({ value, onChange }: {
                 {opt.label}
               </button>
             ))}
+          </div>
+          <div className="border-t border-gray-100 dark:border-gray-800 px-4 py-3">
+            <button
+              onClick={onToggleStars}
+              className="flex items-center justify-between w-full text-xs font-semibold text-gray-600 dark:text-gray-400"
+            >
+              <span>Starred first</span>
+              <span className={`w-8 h-4 rounded-full transition-colors flex items-center px-0.5 ${starsFirst ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                <span className={`w-3 h-3 rounded-full bg-white shadow transition-transform ${starsFirst ? 'translate-x-4' : 'translate-x-0'}`} />
+              </span>
+            </button>
           </div>
         </div>
       )}
@@ -364,6 +377,7 @@ function App() {
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
   const [groupBy, setGroupBy] = useState<'none' | 'suburb' | 'uni' | 'work' | 'score'>('none')
   const [sortBy, setSortBy] = useState<'score' | 'rent-asc' | 'rent-desc'>('score')
+  const [starsFirst, setStarsFirst] = useState(true)
   const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [search, setSearch] = useState('')
@@ -489,7 +503,7 @@ function App() {
                 ><FontAwesomeIcon icon={faCar} /></button>
               </div>
               <div className="hidden md:block">
-                <SortPanel value={sortBy} onChange={setSortBy} />
+                <SortPanel value={sortBy} onChange={setSortBy} starsFirst={starsFirst} onToggleStars={() => setStarsFirst(v => !v)} />
               </div>
               <div className="hidden md:block">
                 <GroupPanel value={groupBy} onChange={setGroupBy} />
@@ -571,6 +585,7 @@ function App() {
             search={search}
             filters={filters}
             sortBy={sortBy}
+            starsFirst={starsFirst}
           />
         </div>
       )}
