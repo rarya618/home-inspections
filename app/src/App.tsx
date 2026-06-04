@@ -286,16 +286,17 @@ function SortPanel({ value, onChange }: {
   )
 }
 
-const GROUP_OPTIONS: { value: 'none' | 'suburb' | 'uni' | 'work'; label: string }[] = [
+const GROUP_OPTIONS: { value: 'none' | 'suburb' | 'uni' | 'work' | 'score'; label: string }[] = [
   { value: 'none',   label: 'No grouping' },
   { value: 'suburb', label: 'Suburb' },
+  { value: 'score',  label: 'Score' },
   { value: 'uni',    label: 'Uni proximity' },
   { value: 'work',   label: 'Work proximity' },
 ]
 
 function GroupPanel({ value, onChange }: {
-  value: 'none' | 'suburb' | 'uni' | 'work'
-  onChange: (v: 'none' | 'suburb' | 'uni' | 'work') => void
+  value: 'none' | 'suburb' | 'uni' | 'work' | 'score'
+  onChange: (v: 'none' | 'suburb' | 'uni' | 'work' | 'score') => void
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -361,7 +362,7 @@ function App() {
   const [currentEntryData, setCurrentEntryData] = useState<Entry | null>(null)
   const [transitMode, setTransitMode] = useState<'pt' | 'drive'>('pt')
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'map'>('list')
-  const [groupBy, setGroupBy] = useState<'none' | 'suburb' | 'uni' | 'work'>('none')
+  const [groupBy, setGroupBy] = useState<'none' | 'suburb' | 'uni' | 'work' | 'score'>('none')
   const [sortBy, setSortBy] = useState<'score' | 'rent-asc' | 'rent-desc'>('score')
   const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
