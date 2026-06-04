@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react"
 import { sampleEntry, Entry } from "./AddEntry"
 import { Filters } from "../App"
-import { getHouseEntries, deleteEntry, refreshTransitTimes } from "../firebase/database";
+import { getHouseEntries, deleteEntry, refreshTransitTimes, updateEntry } from "../firebase/database";
 import { calculateScore } from "./Score";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
+import { faPenToSquare, faStar as faStarOutline } from "@fortawesome/free-regular-svg-icons";
 import {
   faTrash, faCircleCheck, faUtensils, faCouch, faWind, faPaw,
   faWarehouse, faWifi, faBolt, faDroplet, faBed, faShower, faCar,
   faEllipsisVertical, faArrowUpRightFromSquare, faExpand, faSeedling,
-  faRotate,
+  faRotate, faStar,
 } from "@fortawesome/free-solid-svg-icons";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useTitle } from "../App";
@@ -226,12 +226,13 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, transitMode }: {
   );
 }
 
-function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode }: {
+function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, onStar, transitMode }: {
   entry: Entry,
   onEdit: () => void,
   onDelete: () => void,
   onClick: () => void,
   onFetchTransit: () => Promise<void>,
+  onStar: () => void,
   transitMode: 'pt' | 'drive',
 }) {
   const score = entry.score ?? calculateScore(entry);
@@ -345,6 +346,17 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, transitMode
       <div className={`hidden sm:block shrink-0 ml-2 ${meta.scoreBg} ${meta.scoreText} rounded-full px-2.5 py-1 text-center`}>
         <p className="text-sm font-bold tabular-nums leading-none tracking-tight">{score}</p>
       </div>
+
+      {/* Star button */}
+      <button
+        onClick={e => { e.stopPropagation(); onStar(); }}
+        className="shrink-0 p-1.5 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+      >
+        <FontAwesomeIcon
+          icon={entry.isStarred ? faStar : faStarOutline}
+          className={`w-3.5 ${entry.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-400'}`}
+        />
+      </button>
 
       {/* Menu button */}
       <div className="shrink-0" ref={menuRef}>
@@ -482,6 +494,11 @@ function Table(props: Props) {
     await getDataFromDb();
   }
 
+  const handleStar = async (entry: Entry) => {
+    await updateEntry(entry.id, { isStarred: !entry.isStarred });
+    await getDataFromDb();
+  }
+
   const PROXIMITY_BUCKETS = ['≤ 10 min', '11 – 20 min', '21 – 30 min', '31 – 40 min', '41 – 55 min', '> 55 min', 'No data']
   const getProximityBucket = (mins: string | undefined): string => {
     if (!mins) return 'No data'
@@ -536,6 +553,7 @@ function Table(props: Props) {
               onDelete={() => handleDelete(entry.id)}
               onClick={() => props.onCardClick(entry)}
               onFetchTransit={() => handleFetchTransit(entry.id, entry.address)}
+              onStar={() => handleStar(entry)}
               transitMode={transitMode}
             />
           ))}
@@ -556,6 +574,7 @@ function Table(props: Props) {
                   onDelete={() => handleDelete(entry.id)}
                   onClick={() => props.onCardClick(entry)}
                   onFetchTransit={() => handleFetchTransit(entry.id, entry.address)}
+                  onStar={() => handleStar(entry)}
                   transitMode={transitMode}
                 />
               ))}

@@ -47,6 +47,7 @@ export const fields: Field[] = [
   {id: "hasLawn", label: "Lawn?", dataType: "checkbox"},
   {id: "hasPool", label: "Pool?", dataType: "checkbox"},
   {id: "hasGym", label: "Gym?", dataType: "checkbox"},
+  {id: "isStarred", label: "Starred?", dataType: "checkbox"},
   {id: "isRented", label: "Rented?", dataType: "checkbox"},
   {id: "isUnavailable", label: "Unavailable?", dataType: "checkbox"}
 ]
@@ -83,6 +84,7 @@ export type Entry = {
   hasLawn?: boolean,
   hasPool?: boolean,
   hasGym?: boolean,
+  isStarred?: boolean,
   uniDrive?: string,
   workDrive?: string,
   rent: string,
