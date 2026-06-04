@@ -29,7 +29,7 @@ type Props = {
   transitMode: 'pt' | 'drive',
   viewMode: 'cards' | 'list',  // 'map' is handled above in App and never passed here
   refreshKey: number,
-  groupBy: 'none' | 'suburb' | 'uni' | 'work',
+  groupBy: 'none' | 'suburb' | 'uni' | 'work' | 'score',
   search: string,
   filters: Filters,
   sortBy: 'score' | 'rent-asc' | 'rent-desc',
@@ -493,10 +493,20 @@ function Table(props: Props) {
     if (m <= 55) return '41 – 55 min'
     return '> 55 min'
   }
+  const SCORE_BUCKETS = ['900+', '750 – 899', '550 – 749', '350 – 549', '0 – 349', 'Below 0']
+  const getScoreBucket = (score: number): string => {
+    if (score >= 900) return '900+'
+    if (score >= 750) return '750 – 899'
+    if (score >= 550) return '550 – 749'
+    if (score >= 350) return '350 – 549'
+    if (score >= 0)   return '0 – 349'
+    return 'Below 0'
+  }
   const getGroupKey = (entry: Entry): string => {
     if (groupBy === 'suburb') return getSuburb(entry.address || '') || 'Other'
     if (groupBy === 'uni') return getProximityBucket(transitMode === 'pt' ? entry.uniPT : entry.uniDrive)
     if (groupBy === 'work') return getProximityBucket(transitMode === 'pt' ? entry.workPT : entry.workDrive)
+    if (groupBy === 'score') return getScoreBucket(entry.score ?? calculateScore(entry))
     return ''
   }
 
@@ -509,6 +519,9 @@ function Table(props: Props) {
   }
   if (groupBy === 'uni' || groupBy === 'work') {
     groups.sort((a, b) => PROXIMITY_BUCKETS.indexOf(a.label) - PROXIMITY_BUCKETS.indexOf(b.label))
+  }
+  if (groupBy === 'score') {
+    groups.sort((a, b) => SCORE_BUCKETS.indexOf(a.label) - SCORE_BUCKETS.indexOf(b.label))
   }
 
   if (viewMode === 'list') {
