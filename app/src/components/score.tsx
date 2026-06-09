@@ -280,9 +280,15 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
   const uniPT    = entry.uniPT    ? parseInt(entry.uniPT)    : 0
   const uniWalk  = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0
   const uniDrive = entry.uniDrive ? parseInt(entry.uniDrive) : 0
-  add("Uni commute", getCommuteScore(uniPT, uniWalk, uniDrive) - getWalkBonus(uniWalk) - getDriveBonus(uniDrive))
-  add("Uni walkability", getWalkBonus(uniWalk))
-  add("Uni drivability", getDriveBonus(uniDrive))
+  const utsPT    = entry.utsPT    ? parseInt(entry.utsPT)    : 0
+  const utsWalk  = entry.utsWalk  ? parseInt(entry.utsWalk)  : 0
+  const utsDrive = entry.utsDrive ? parseInt(entry.utsDrive) : 0
+  const bestUniPT    = (uniPT    && utsPT)    ? Math.min(uniPT, utsPT)       : (uniPT || utsPT)
+  const bestUniWalk  = (uniWalk  && utsWalk)  ? Math.min(uniWalk, utsWalk)   : (uniWalk || utsWalk)
+  const bestUniDrive = (uniDrive && utsDrive) ? Math.min(uniDrive, utsDrive) : (uniDrive || utsDrive)
+  add("Uni commute", getCommuteScore(bestUniPT, bestUniWalk, bestUniDrive) - getWalkBonus(bestUniWalk) - getDriveBonus(bestUniDrive))
+  add("Uni walkability", getWalkBonus(bestUniWalk))
+  add("Uni drivability", getDriveBonus(bestUniDrive))
 
   const workPT    = entry.workPT    ? parseInt(entry.workPT)    : 0
   const workWalk  = entry.workWalk  ? parseInt(entry.workWalk)  : 0
@@ -326,7 +332,7 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
     let bathScore = 0
     if (ratio >= 1.0)       bathScore = 250
     else if (ratio >= 0.67) bathScore = 100
-    else if (ratio >= 0.5)  bathScore = -50
+    else if (ratio >= 0.5)  bathScore = 0
     else if (ratio >= 0.33) bathScore = -250
     else                    bathScore = -450
     add("Bathrooms", bathScore)
@@ -369,11 +375,17 @@ const calculateScore = (entry: Entry) => {
     const uniPTMinutes     = entry.uniPT    ? parseInt(entry.uniPT)    : 0
     const uniWalkMinutes   = entry.uniWalk  ? parseInt(entry.uniWalk)  : 0
     const uniDriveMinutes  = entry.uniDrive ? parseInt(entry.uniDrive) : 0
+    const utsPTMinutes     = entry.utsPT    ? parseInt(entry.utsPT)    : 0
+    const utsWalkMinutes   = entry.utsWalk  ? parseInt(entry.utsWalk)  : 0
+    const utsDriveMinutes  = entry.utsDrive ? parseInt(entry.utsDrive) : 0
+    const bestUniPT    = (uniPTMinutes    && utsPTMinutes)    ? Math.min(uniPTMinutes, utsPTMinutes)       : (uniPTMinutes || utsPTMinutes)
+    const bestUniWalk  = (uniWalkMinutes  && utsWalkMinutes)  ? Math.min(uniWalkMinutes, utsWalkMinutes)   : (uniWalkMinutes || utsWalkMinutes)
+    const bestUniDrive = (uniDriveMinutes && utsDriveMinutes) ? Math.min(uniDriveMinutes, utsDriveMinutes) : (uniDriveMinutes || utsDriveMinutes)
     const workPTMinutes    = entry.workPT    ? parseInt(entry.workPT)    : 0
     const workWalkMinutes  = entry.workWalk  ? parseInt(entry.workWalk)  : 0
     const workDriveMinutes = entry.workDrive ? parseInt(entry.workDrive) : 0
 
-    score += getCommuteScore(uniPTMinutes, uniWalkMinutes, uniDriveMinutes)
+    score += getCommuteScore(bestUniPT, bestUniWalk, bestUniDrive)
     score += getCommuteScore(workPTMinutes, workWalkMinutes, workDriveMinutes)
 
     // add grocery score (best single store only)
@@ -424,7 +436,7 @@ const calculateScore = (entry: Entry) => {
       const ratio = baths / beds
       if (ratio >= 1.0)       score += 250
       else if (ratio >= 0.67) score += 100
-      else if (ratio >= 0.5)  score -= 50
+      else if (ratio >= 0.5)  score -= 0
       else if (ratio >= 0.33) score -= 250
       else                    score -= 450
     }
