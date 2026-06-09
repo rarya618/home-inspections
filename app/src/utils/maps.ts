@@ -6,6 +6,9 @@ export interface TransitTimes {
   uniPT?: string
   uniWalk?: string
   uniDrive?: string
+  utsPT?: string
+  utsWalk?: string
+  utsDrive?: string
   workPT?: string
   workWalk?: string
   workDrive?: string
@@ -166,8 +169,8 @@ export const fetchTransitTimes = async (propertyAddress: string): Promise<Transi
         : Promise.resolve(null),
     ])
 
-    // Transit destinations: uni, work, and optionally station
-    const transitDests = [DESTINATIONS.uni, DESTINATIONS.work]
+    // Transit destinations: uni (PNR/USYD), UTS, work, and optionally station
+    const transitDests = [DESTINATIONS.uni, DESTINATIONS.uts, DESTINATIONS.work]
     if (stationLocation) transitDests.push(latLngToString(stationLocation))
 
     // Nearby destinations: only include ones that were found
@@ -188,19 +191,23 @@ export const fetchTransitTimes = async (propertyAddress: string): Promise<Transi
 
     const result: TransitTimes = {}
 
-    // Uni
+    // PNR/USYD (index 0)
     if (ptTimes[0]    != null) result.uniPT    = String(ptTimes[0])
     if (walkTimes[0]  != null) result.uniWalk  = String(walkTimes[0])
     if (driveTimes[0] != null) result.uniDrive  = String(driveTimes[0])
-    // Work
-    if (ptTimes[1]    != null) result.workPT    = String(ptTimes[1])
-    if (walkTimes[1]  != null) result.workWalk  = String(walkTimes[1])
-    if (driveTimes[1] != null) result.workDrive  = String(driveTimes[1])
-    // Train station (index 2 if present)
+    // UTS (index 1)
+    if (ptTimes[1]    != null) result.utsPT    = String(ptTimes[1])
+    if (walkTimes[1]  != null) result.utsWalk  = String(walkTimes[1])
+    if (driveTimes[1] != null) result.utsDrive  = String(driveTimes[1])
+    // Work (index 2)
+    if (ptTimes[2]    != null) result.workPT    = String(ptTimes[2])
+    if (walkTimes[2]  != null) result.workWalk  = String(walkTimes[2])
+    if (driveTimes[2] != null) result.workDrive  = String(driveTimes[2])
+    // Train station (index 3 if present)
     if (stationLocation) {
-      if (walkTimes[2]  != null) result.trainWalk  = String(walkTimes[2])
-      if (ptTimes[2]    != null) result.trainPT    = String(ptTimes[2])
-      if (driveTimes[2] != null) result.trainDrive = String(driveTimes[2])
+      if (walkTimes[3]  != null) result.trainWalk  = String(walkTimes[3])
+      if (ptTimes[3]    != null) result.trainPT    = String(ptTimes[3])
+      if (driveTimes[3] != null) result.trainDrive = String(driveTimes[3])
     }
 
     // Nearby walking times
