@@ -91,7 +91,7 @@ export default function MapView({ onCardClick }: Props) {
     const placeMarkers = async () => {
       const geocoder = new google.maps.Geocoder()
 
-      const [results, uniResult, workResult] = await Promise.all([
+      const [results, uniResult, utsResult, workResult] = await Promise.all([
         Promise.allSettled(
           entries.map(async entry => {
             if (!entry.address) return null
@@ -101,6 +101,7 @@ export default function MapView({ onCardClick }: Props) {
           })
         ),
         geocoder.geocode({ address: DESTINATIONS.uni }).then(r => r.results?.[0]?.geometry?.location ?? null).catch(() => null),
+        geocoder.geocode({ address: DESTINATIONS.uts }).then(r => r.results?.[0]?.geometry?.location ?? null).catch(() => null),
         geocoder.geocode({ address: DESTINATIONS.work }).then(r => r.results?.[0]?.geometry?.location ?? null).catch(() => null),
       ])
 
@@ -151,9 +152,20 @@ export default function MapView({ onCardClick }: Props) {
         new google.maps.Marker({
           position: uniResult,
           map,
-          title: 'Uni',
+          title: 'PNR Building, USYD',
           label: { text: 'U', color: 'white', fontSize: '11px', fontWeight: 'bold' },
           icon: destinationMarkerIcon('#6366f1'),
+          zIndex: 10,
+        })
+      }
+
+      if (utsResult) {
+        new google.maps.Marker({
+          position: utsResult,
+          map,
+          title: 'Building 2, UTS',
+          label: { text: 'T', color: 'white', fontSize: '11px', fontWeight: 'bold' },
+          icon: destinationMarkerIcon('#8b5cf6'),
           zIndex: 10,
         })
       }
@@ -232,7 +244,7 @@ export default function MapView({ onCardClick }: Props) {
             <p className="font-bold text-gray-900 dark:text-white text-sm leading-snug pr-7 truncate">{street}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{entry.address}</p>
             {entry.isUnavailable && (
-              <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-wide">Unavailable</span>
+              <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-tight">Unavailable</span>
             )}
 
             {/* Rent + score */}
