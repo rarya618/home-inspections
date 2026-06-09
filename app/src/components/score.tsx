@@ -19,7 +19,7 @@ const getRentFactor = (ppRent: number) => {
 }
 
 // returns the public transport factor for property
-const getPTFactor = (minutesTaken: number, _isMisc: boolean) => {
+const getPTFactor = (minutesTaken: number) => {
   if (minutesTaken == 0) return 0
   if (minutesTaken <= 15) return 200
   if (minutesTaken <= 20) return 160
@@ -241,7 +241,7 @@ const getDriveBonus = (driveMins: number): number => {
 const getCommuteScore = (ptMins: number, walkMins: number, driveMins: number): number => {
   const walkable = walkMins > 0 && walkMins <= 50
   const modes: { score: number; weight: number }[] = []
-  if (ptMins > 0)    modes.push({ score: getPTFactor(ptMins, false),   weight: 0.4 })
+  if (ptMins > 0)    modes.push({ score: getPTFactor(ptMins),   weight: 0.4 })
   if (walkable)      modes.push({ score: getWalkingFactor(walkMins),   weight: 0.4 })
   if (driveMins > 0) modes.push({ score: getDrivingFactor(driveMins),  weight: 0.3 })
   if (modes.length === 0) return 0
@@ -270,7 +270,6 @@ const calculateScoreBreakdown = (entry: Entry): ScoreComponent[] => {
     if (value !== 0) components.push({ label, value: Math.round(value) })
   }
 
-  if (entry.address == "2019/185-211 Broadway") add("Address bonus", 200)
   add("Community bonus", getCommunityBonus(entry.address))
 
   const beds = entry.bedrooms ? Math.max(1, parseInt(entry.bedrooms)) : 1
@@ -361,9 +360,6 @@ const calculateScore = (entry: Entry) => {
         return score;
     }
 
-    if (entry.address == "2019/185-211 Broadway") {
-      score += 200
-    }
     score += getCommunityBonus(entry.address)
 
     // add rent score (per person: total rent ÷ bedrooms)
@@ -436,7 +432,7 @@ const calculateScore = (entry: Entry) => {
       const ratio = baths / beds
       if (ratio >= 1.0)       score += 250
       else if (ratio >= 0.67) score += 100
-      else if (ratio >= 0.5)  score -= 0
+      else if (ratio >= 0.5)  score += 0
       else if (ratio >= 0.33) score -= 250
       else                    score -= 450
     }
@@ -461,6 +457,7 @@ const calculateScore = (entry: Entry) => {
     if (entry.hasLawn) score -= 150
 
     // add offsets
+    // affordable even if only 2 people share (worst-case occupancy check)
     if (parseInt(entry.rent) / 2 <= 350) score += 100
 
     if (entry.size)
