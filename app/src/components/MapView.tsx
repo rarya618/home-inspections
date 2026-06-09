@@ -153,7 +153,7 @@ export default function MapView({ onCardClick }: Props) {
           position: uniResult,
           map,
           title: 'PNR Building, USYD',
-          label: { text: 'U', color: 'white', fontSize: '11px', fontWeight: 'bold' },
+          label: { text: 'R', color: 'white', fontSize: '11px', fontWeight: 'bold' },
           icon: destinationMarkerIcon('#6366f1'),
           zIndex: 10,
         })
@@ -164,7 +164,7 @@ export default function MapView({ onCardClick }: Props) {
           position: utsResult,
           map,
           title: 'Building 2, UTS',
-          label: { text: 'T', color: 'white', fontSize: '11px', fontWeight: 'bold' },
+          label: { text: 'D', color: 'white', fontSize: '11px', fontWeight: 'bold' },
           icon: destinationMarkerIcon('#8b5cf6'),
           zIndex: 10,
         })
