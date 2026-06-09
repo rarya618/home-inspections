@@ -144,16 +144,16 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
       onClick={onClick}
     >
       {/* Top: address + actions */}
-      <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-3">
+      <div className="flex items-start justify-between gap-2 px-4 pt-5 pb-3">
         <div className="flex-1 min-w-0">
-          <h2 className="text-[16px] font-bold text-gray-900 dark:text-white leading-snug truncate">{street}</h2>
-          <div className="flex items-center gap-2 mt-0.5">
-            {suburb && <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400 truncate">{suburb}</span>}
+          <h2 className="text-[19px] font-bold text-gray-900 dark:text-white leading-snug truncate">{street}</h2>
+          <div className="flex items-center gap-2 mt-1">
+            {suburb && <span className="text-[15px] font-medium text-gray-500 dark:text-gray-400 truncate">{suburb}</span>}
             {(entry.bedrooms || entry.bathrooms || entry.carParks) && (
-              <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 dark:text-gray-500 shrink-0">
-                {entry.bedrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faBed} className="w-2.5" />{entry.bedrooms}</span>}
-                {entry.bathrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faShower} className="w-2.5" />{entry.bathrooms}</span>}
-                {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faCar} className="w-2.5" />{entry.carParks}</span>}
+              <span className="flex items-center gap-1.5 text-[14px] font-semibold text-gray-400 dark:text-gray-500 shrink-0">
+                {entry.bedrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faBed} className="w-3" />{entry.bedrooms}</span>}
+                {entry.bathrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faShower} className="w-3" />{entry.bathrooms}</span>}
+                {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faCar} className="w-3" />{entry.carParks}</span>}
               </span>
             )}
           </div>
@@ -190,7 +190,7 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
       </div>
 
       {/* Rent + Score */}
-      <div className="px-4 pb-4 flex items-end justify-between">
+      <div className="px-4 pb-5 flex items-end justify-between">
         <div>
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-black text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
@@ -217,7 +217,7 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
           {topStats.length > 0 && (
             <div className="flex flex-1 divide-x divide-gray-100 dark:divide-gray-800">
               {topStats.map(s => (
-                <div key={s.label} className="flex-1 flex flex-col items-center justify-center py-2.5">
+                <div key={s.label} className="flex-1 flex flex-col items-center justify-center py-4">
                   <span className="text-[10px] font-bold uppercase tracking-tight text-gray-400 dark:text-gray-500 leading-none">{s.label}</span>
                   <span className="text-[17px] font-black tabular-nums text-gray-900 dark:text-white leading-none mt-0.5">
                     {s.value}<span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 ml-0.5">min</span>
