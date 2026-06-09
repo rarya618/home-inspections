@@ -135,77 +135,70 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
   const beds = entry.bedrooms ? parseInt(entry.bedrooms) : null;
   const ppRent = beds && beds > 1 ? Math.round(parseInt(entry.rent) / beds) : null;
 
+  const street = getStreet(entry.address || "") || "—";
+  const suburb = getSuburb(entry.address || "");
+
   return (
     <div
-      className={`relative bg-white dark:bg-gray-900 rounded-lg border-l-4 ${meta.border} border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors duration-150 flex flex-col cursor-pointer`}
+      className={`relative bg-white dark:bg-gray-900 rounded-xl border-l-[3px] ${meta.border} border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors duration-150 flex flex-col cursor-pointer`}
       onClick={onClick}
     >
-      {/* Top row: address + menu */}
-      <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-2">
+      {/* Top: address + actions */}
+      <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-3">
         <div className="flex-1 min-w-0">
-          <h2 className="text-base font-bold text-gray-900 dark:text-white leading-snug truncate">
-            {getStreet(entry.address || "") || "—"}
-          </h2>
-          <div className="flex items-center gap-2 mt-1 text-xs text-gray-400 dark:text-gray-500">
-            {entry.bedrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faBed} className="w-3" />{entry.bedrooms}</span>}
-            {entry.bathrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faShower} className="w-3" />{entry.bathrooms}</span>}
-            {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faCar} className="w-3" />{entry.carParks}</span>}
+          <h2 className="text-[16px] font-bold text-gray-900 dark:text-white leading-snug truncate">{street}</h2>
+          <div className="flex items-center gap-2 mt-0.5">
+            {suburb && <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400 truncate">{suburb}</span>}
+            {(entry.bedrooms || entry.bathrooms || entry.carParks) && (
+              <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 dark:text-gray-500 shrink-0">
+                {entry.bedrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faBed} className="w-2.5" />{entry.bedrooms}</span>}
+                {entry.bathrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faShower} className="w-2.5" />{entry.bathrooms}</span>}
+                {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faCar} className="w-2.5" />{entry.carParks}</span>}
+              </span>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={e => { e.stopPropagation(); onStar(); }}
-            className="p-1.5 transition-colors rounded-md"
-          >
-            <FontAwesomeIcon
-              icon={entry.isStarred ? faStar : faStarOutline}
-              className={`w-3.5 ${entry.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-400'}`}
-            />
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button onClick={e => { e.stopPropagation(); onStar(); }} className="p-1.5 rounded-lg transition-colors">
+            <FontAwesomeIcon icon={entry.isStarred ? faStar : faStarOutline} className={`w-3.5 ${entry.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-400'}`} />
           </button>
           <div className="relative" ref={menuRef}>
-          <button
-            onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
-            className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors rounded-md"
-          >
-            <FontAwesomeIcon icon={faEllipsisVertical} className="w-3.5" />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg z-50 overflow-hidden">
-              <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onClick(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <FontAwesomeIcon icon={faExpand} className="w-3.5 text-gray-400" /> See details
-              </button>
-              <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onEdit(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <FontAwesomeIcon icon={faPenToSquare} className="w-3.5 text-gray-400" /> Edit
-              </button>
-              {entry.listing && (
-                <a href={entry.listing} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3.5 text-gray-400" /> View listing
-                </a>
-              )}
-              <div className="border-t border-gray-100 dark:border-gray-800" />
-              <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onDelete(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
-                <FontAwesomeIcon icon={faTrash} className="w-3.5" /> Delete
-              </button>
-            </div>
-          )}
+            <button onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }} className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors rounded-lg">
+              <FontAwesomeIcon icon={faEllipsisVertical} className="w-3.5" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg z-50 overflow-hidden">
+                <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onClick(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <FontAwesomeIcon icon={faExpand} className="w-3.5 text-gray-400" /> See details
+                </button>
+                <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onEdit(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <FontAwesomeIcon icon={faPenToSquare} className="w-3.5 text-gray-400" /> Edit
+                </button>
+                {entry.listing && (
+                  <a href={entry.listing} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3.5 text-gray-400" /> View listing
+                  </a>
+                )}
+                <div className="border-t border-gray-100 dark:border-gray-800" />
+                <button onClick={e => { e.stopPropagation(); setMenuOpen(false); onDelete(); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+                  <FontAwesomeIcon icon={faTrash} className="w-3.5" /> Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Rent + Score */}
-      <div className="px-4 pt-2 pb-4 flex items-end justify-between">
+      <div className="px-4 pb-4 flex items-end justify-between">
         <div>
-          <div className="flex items-baseline gap-0.5">
-            <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
-            <span className="text-xs text-gray-400 dark:text-gray-500">/wk</span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-black text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
+            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">/wk</span>
           </div>
-          {ppRent && (
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>
-          )}
+          {ppRent && <p className="text-[12px] font-semibold text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>}
         </div>
-        <div className={`${meta.scoreBg} ${meta.scoreText} rounded-xl px-3 py-1.5 text-center`}>
-          <p className="text-lg font-extrabold tabular-nums leading-none">{score}</p>
-        </div>
+        <span className={`text-3xl font-black tabular-nums leading-none ${meta.scoreText}`}>{score}</span>
       </div>
 
       {/* Stale drive times warning */}
@@ -218,19 +211,23 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
         </div>
       )}
 
-      {/* Footer: transit + features */}
+      {/* Transit footer */}
       {(topStats.length > 0 || features.length > 0) && (
-        <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
-          <div className="flex gap-4">
-            {topStats.map(s => (
-              <div key={s.label} className="flex flex-col">
-                <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums leading-tight">{s.value}<span className="text-xs font-normal text-gray-400 ml-0.5">min</span></span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">{s.label}</span>
-              </div>
-            ))}
-          </div>
+        <div className="border-t border-gray-100 dark:border-gray-800 flex">
+          {topStats.length > 0 && (
+            <div className="flex flex-1 divide-x divide-gray-100 dark:divide-gray-800">
+              {topStats.map(s => (
+                <div key={s.label} className="flex-1 flex flex-col items-center justify-center py-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-tight text-gray-400 dark:text-gray-500 leading-none">{s.label}</span>
+                  <span className="text-[17px] font-black tabular-nums text-gray-900 dark:text-white leading-none mt-0.5">
+                    {s.value}<span className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 ml-0.5">min</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
           {features.length > 0 && (
-            <div className="flex gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 px-3 border-l border-gray-100 dark:border-gray-800 shrink-0">
               {features.map((f, i) => (
                 <span key={i} className="relative group/tip">
                   <FontAwesomeIcon icon={f.icon} className="text-xs text-gray-300 dark:text-gray-600" />
