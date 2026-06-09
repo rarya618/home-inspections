@@ -22,12 +22,12 @@ const getScoreColor = (score: number): string => {
 }
 
 const getScoreMeta = (score: number) => {
-  if (score >= 800) return { scoreText: 'text-emerald-600 dark:text-emerald-400', scoreBg: 'bg-emerald-50 dark:bg-emerald-950/60' }
-  if (score >= 650) return { scoreText: 'text-teal-600 dark:text-teal-400',       scoreBg: 'bg-teal-50 dark:bg-teal-950/60' }
-  if (score >= 450) return { scoreText: 'text-sky-600 dark:text-sky-400',         scoreBg: 'bg-sky-50 dark:bg-sky-950/60' }
-  if (score >= 300) return { scoreText: 'text-amber-600 dark:text-amber-400',     scoreBg: 'bg-amber-50 dark:bg-amber-950/60' }
-  if (score >= 0)   return { scoreText: 'text-orange-600 dark:text-orange-400',   scoreBg: 'bg-orange-50 dark:bg-orange-950/60' }
-  return             { scoreText: 'text-red-600 dark:text-red-400',               scoreBg: 'bg-red-50 dark:bg-red-950/60' }
+  if (score >= 800) return { scoreText: 'text-emerald-600 dark:text-emerald-400', label: 'Excellent' }
+  if (score >= 650) return { scoreText: 'text-teal-600 dark:text-teal-400',       label: 'Great' }
+  if (score >= 450) return { scoreText: 'text-sky-600 dark:text-sky-400',         label: 'Good' }
+  if (score >= 300) return { scoreText: 'text-amber-600 dark:text-amber-400',     label: 'Fair' }
+  if (score >= 0)   return { scoreText: 'text-orange-600 dark:text-orange-400',   label: 'Poor' }
+  return                   { scoreText: 'text-red-600 dark:text-red-400',         label: 'Bad' }
 }
 
 export default function MapView({ onCardClick }: Props) {
@@ -42,7 +42,7 @@ export default function MapView({ onCardClick }: Props) {
   // Fetch entries from Firebase
   useEffect(() => {
     getHouseEntries().then(data => {
-      setEntries(data.filter(e => !e.isRented))
+      setEntries(data.filter(e => !e.isRented && (e.score ?? calculateScore(e)) >= 0))
       setIsLoadingData(false)
     })
   }, [])
@@ -213,10 +213,12 @@ export default function MapView({ onCardClick }: Props) {
         const meta = getScoreMeta(score)
         const beds = entry.bedrooms ? parseInt(entry.bedrooms) : null
         const ppRent = beds && beds > 1 ? Math.round(parseInt(entry.rent) / beds) : null
-        const street = entry.address?.split(',')[0] ?? '—'
+        const parts = entry.address?.split(',') ?? []
+        const street = parts[0]?.trim() ?? '—'
+        const suburb = parts[1]?.trim() ?? ''
 
         const cardW = 288
-        const cardH = 170
+        const cardH = 190
 
         // Try above the marker; fall through below if it clips the header
         let posX = x - cardW / 2
@@ -229,56 +231,62 @@ export default function MapView({ onCardClick }: Props) {
 
         return (
           <div
-            className={`fixed w-72 rounded-2xl shadow-2xl border p-4 z-20 ${entry.isUnavailable ? 'bg-gray-50 dark:bg-gray-900/60 border-gray-200 dark:border-gray-700 opacity-80' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'}`}
+            className={`fixed w-72 rounded-2xl shadow-2xl border z-20 overflow-hidden ${entry.isUnavailable ? 'bg-gray-50 dark:bg-gray-900/60 border-gray-200 dark:border-gray-700 opacity-80' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'}`}
             style={{ top: posY, left: posX }}
           >
-            {/* Dismiss */}
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute top-3.5 right-3.5 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              <FontAwesomeIcon icon={faXmark} className="w-3.5" />
-            </button>
-
-            {/* Address */}
-            <p className="font-bold text-gray-900 dark:text-white text-sm leading-snug pr-7 truncate">{street}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{entry.address}</p>
-            {entry.isUnavailable && (
-              <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-tight">Unavailable</span>
-            )}
+            {/* Header */}
+            <div className="px-4 pt-4 pb-3">
+              <button
+                onClick={() => setSelected(null)}
+                className="absolute top-3.5 right-3.5 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <FontAwesomeIcon icon={faXmark} className="w-3.5" />
+              </button>
+              <p className="text-[17px] font-bold text-gray-900 dark:text-white leading-snug pr-7 truncate">{street}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {suburb && <span className="text-[14px] font-medium text-gray-500 dark:text-gray-400 truncate">{suburb}</span>}
+                {entry.isUnavailable && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-tight shrink-0">Unavailable</span>
+                )}
+              </div>
+            </div>
 
             {/* Rent + score */}
-            <div className="flex items-end justify-between mt-3">
+            <div className="px-4 pb-4 flex items-end justify-between">
               <div>
-                <div className="flex items-baseline gap-0.5">
-                  <span className="text-2xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">/wk</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
+                  <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">/wk</span>
                 </div>
-                {ppRent && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>}
+                {ppRent && <p className="text-[12px] font-semibold text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>}
               </div>
-              <div className={`${meta.scoreBg} ${meta.scoreText} rounded-full px-3 py-1.5`}>
-                <p className="text-base font-bold tabular-nums leading-none tracking-tight">{score}</p>
+              <div className="text-right">
+                <span className={`text-3xl font-black tabular-nums leading-none ${meta.scoreText}`}>{score}</span>
+                <p className={`text-[11px] font-bold tracking-tight leading-none mt-0.5 ${meta.scoreText} opacity-70`}>{meta.label}</p>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 mt-3">
+            <div className="flex border-t border-gray-100 dark:border-gray-800">
               <button
                 onClick={() => { setSelected(null); onCardClick(entry) }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold py-2 rounded-xl transition-all"
+                className="flex-1 flex items-center justify-center gap-1.5 text-indigo-600 dark:text-indigo-400 text-sm font-semibold py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <FontAwesomeIcon icon={faExpand} className="w-3.5" />
                 Details
               </button>
               {entry.listing && (
-                <a
-                  href={entry.listing}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center px-3 py-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3.5" />
-                </a>
+                <>
+                  <div className="w-px bg-gray-100 dark:bg-gray-800" />
+                  <a
+                    href={entry.listing}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center px-4 py-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3.5" />
+                  </a>
+                </>
               )}
             </div>
           </div>
