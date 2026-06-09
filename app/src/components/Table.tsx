@@ -476,6 +476,7 @@ function Table(props: Props) {
   const visibleEntries = [...data]
     .filter(e => !e.isRented)
     .filter(e => !e.isUnavailable)
+    .filter(e => (e.score ?? calculateScore(e)) >= 0)
     .filter(e => !q || (e.address || '').toLowerCase().includes(q))
     .filter(e => [...filters.features].every(key => FEATURE_PREDICATES[key]?.(e)))
     .filter(e => {
