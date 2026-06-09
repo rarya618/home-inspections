@@ -458,7 +458,7 @@ function App() {
         />
       )
       : (<>
-      <div className={`sticky top-0 z-20 px-4 py-3 transition-colors ${viewMode === 'map' ? '' : 'bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'}`}>
+      <div className={`sticky top-0 z-20 px-4 py-3 transition-colors ${viewMode === 'map' ? '' : 'bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-gray-200 dark:border-gray-800'}`}>
         {/* Row 1: always visible */}
         <div className="flex items-center justify-between gap-4">
 
