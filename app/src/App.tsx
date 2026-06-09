@@ -7,6 +7,7 @@ import UpdateEntryForm from './components/UpdateEntry';
 import PropertyDetail from './components/PropertyDetail';
 import { Entry } from './components/AddEntry';
 import { ListingPrefill } from './utils/fetchListing';
+import { getHouseEntries, refreshTransitTimes } from './firebase/database';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTableCells, faList, faMap, faArrowsRotate, faMagnifyingGlass, faSlidersH, faBus, faCar, faArrowDownShortWide, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 
@@ -188,7 +189,7 @@ function FilterPanel({ filters, onChange }: {
               <p className="text-xs font-bold uppercase tracking-tight text-gray-400 dark:text-gray-500 mb-2">Max commute</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
-                  <label className="text-xs text-gray-600 dark:text-gray-400 shrink-0">To uni</label>
+                  <label className="text-xs text-gray-600 dark:text-gray-400 shrink-0">To uni (best)</label>
                   <div className="flex items-center gap-1">
                     <input
                       type="number"
@@ -380,6 +381,7 @@ function App() {
   const [starsFirst, setStarsFirst] = useState(true)
   const [importPrefill, setImportPrefill] = useState<ListingPrefill | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [bulkRefreshing, setBulkRefreshing] = useState<{ done: number; total: number } | null>(null)
   const [search, setSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
@@ -402,6 +404,19 @@ function App() {
   const changeAddFormDisplay = () => {
     if (isAddFormDisplayed) setImportPrefill(null)
     toggleAddFormDisplay(!isAddFormDisplayed);
+  };
+
+  const handleBulkRefreshTransit = async () => {
+    if (bulkRefreshing) return
+    const entries = await getHouseEntries()
+    const active = entries.filter(e => !e.isRented && !e.isUnavailable)
+    setBulkRefreshing({ done: 0, total: active.length })
+    for (let i = 0; i < active.length; i++) {
+      await refreshTransitTimes(active[i].id, active[i].address)
+      setBulkRefreshing({ done: i + 1, total: active.length })
+    }
+    setBulkRefreshing(null)
+    setRefreshKey(k => k + 1)
   };
 
   const changeUpdateFormDisplay = () => {
@@ -443,23 +458,40 @@ function App() {
         />
       )
       : (<>
-      <div className={`sticky top-0 z-20 px-4 py-3 transition-colors ${viewMode === 'map' ? '' : 'bg-gray-50/80 dark:bg-gray-950/80 backdrop-blur border-b border-gray-100 dark:border-gray-800'}`}>
+      <div className={`sticky top-0 z-20 px-4 py-3 transition-colors ${viewMode === 'map' ? '' : 'bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'}`}>
         {/* Row 1: always visible */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className={`text-2xl font-extrabold text-gray-900 ${viewMode !== 'map' ? 'dark:text-white' : ''}`}>HouseRank</h1>
+        <div className="flex items-center justify-between gap-4">
+
+          {/* Left: title + utility */}
+          <div className="flex items-center gap-3 shrink-0">
+            <h1 className={`text-[22px] font-black tracking-tight text-gray-900 ${viewMode !== 'map' ? 'dark:text-white' : ''}`}>
+              House<span className="text-indigo-500">Rank</span>
+            </h1>
+            <div className="w-px h-5 bg-gray-200 dark:bg-gray-800" />
             <button
               onClick={() => setRefreshKey(k => k + 1)}
-              className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400 transition-colors rounded-lg"
-              title="Refresh"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              title="Reload listings from database"
             >
-              <FontAwesomeIcon icon={faArrowsRotate} className="w-3.5" />
+              <FontAwesomeIcon icon={faArrowsRotate} className="w-3" />
+              Reload
+            </button>
+            <button
+              onClick={handleBulkRefreshTransit}
+              disabled={!!bulkRefreshing}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              title="Re-fetch travel times from Google Maps for all properties"
+            >
+              <FontAwesomeIcon icon={faArrowsRotate} className={`w-3 ${bulkRefreshing ? 'animate-spin' : ''}`} />
+              {bulkRefreshing ? `${bulkRefreshing.done}/${bulkRefreshing.total}` : 'Travel times'}
             </button>
           </div>
+
+          {/* Right: controls */}
           <div className="flex items-center gap-2">
-            {/* Desktop-only controls */}
             {viewMode !== 'map' && (
               <>
+              {/* Search */}
               <div
                 ref={searchRef}
                 className="hidden md:block relative"
@@ -479,29 +511,34 @@ function App() {
                       value={search}
                       onChange={e => setSearch(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Escape') { setSearch(''); setSearchOpen(false) } }}
-                      className="bg-gray-100 dark:bg-gray-800 rounded-full pl-8 pr-3 py-2.5 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-48"
+                      className="bg-gray-100 dark:bg-gray-800 rounded-lg pl-8 pr-3 py-2 text-xs text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-44"
                     />
                   </>
                 ) : (
                   <button
                     onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 0) }}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full text-xs font-semibold transition-all ${search ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${search ? 'bg-indigo-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200'}`}
                   >
                     <FontAwesomeIcon icon={faMagnifyingGlass} className="w-3" />
                     Search
                   </button>
                 )}
               </div>
-              <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
+
+              <div className="hidden md:w-px md:block h-5 bg-gray-200 dark:bg-gray-800" />
+
+              {/* Transit toggle */}
+              <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
                 <button
                   onClick={() => setTransitMode('pt')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'pt' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${transitMode === 'pt' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                 ><FontAwesomeIcon icon={faBus} /></button>
                 <button
                   onClick={() => setTransitMode('drive')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${transitMode === 'drive' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${transitMode === 'drive' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                 ><FontAwesomeIcon icon={faCar} /></button>
               </div>
+
               <div className="hidden md:block">
                 <SortPanel value={sortBy} onChange={setSortBy} starsFirst={starsFirst} onToggleStars={() => setStarsFirst(v => !v)} />
               </div>
@@ -510,28 +547,33 @@ function App() {
               </div>
               </>
             )}
+
             <div className="hidden md:block"><FilterPanel filters={filters} onChange={setFilters} /></div>
-            {/* View toggle — always visible */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1 gap-0.5">
+
+            <div className="w-px h-5 bg-gray-200 dark:bg-gray-800 hidden md:block" />
+
+            {/* View toggle */}
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
               <button
                 onClick={() => setViewMode('cards')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'cards' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'cards' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               ><FontAwesomeIcon icon={faTableCells} /></button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               ><FontAwesomeIcon icon={faList} /></button>
               <button
                 onClick={() => setViewMode('map')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${viewMode === 'map' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'map' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               ><FontAwesomeIcon icon={faMap} /></button>
             </div>
-            {/* Add button — rightmost */}
+
+            {/* Add button */}
             <button
               onClick={changeAddFormDisplay}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold px-5 py-[8px] rounded-full shadow-sm transition-all"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-all"
             >
-              <span className="text-lg leading-none">+</span>
+              <span className="text-base leading-none font-black">+</span>
               <span className="hidden sm:inline">Add</span>
             </button>
           </div>
