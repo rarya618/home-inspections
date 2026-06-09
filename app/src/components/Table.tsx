@@ -41,36 +41,42 @@ const getScoreMeta = (score: number) => {
     border: "border-l-green-400",
     scoreText: "text-green-600 dark:text-green-400",
     scoreBg: "bg-green-50 dark:bg-green-950/60",
+    badgeBg: "bg-green-500",
     dot: "bg-green-400",
   };
   if (score >= 750) return {
     border: "border-l-lime-400",
     scoreText: "text-lime-600 dark:text-lime-400",
     scoreBg: "bg-lime-50 dark:bg-lime-950/60",
+    badgeBg: "bg-lime-500",
     dot: "bg-lime-400",
   };
   if (score >= 550) return {
     border: "border-l-yellow-400",
     scoreText: "text-yellow-600 dark:text-yellow-400",
     scoreBg: "bg-yellow-50 dark:bg-yellow-950/60",
+    badgeBg: "bg-yellow-400",
     dot: "bg-yellow-400",
   };
   if (score >= 350) return {
     border: "border-l-amber-400",
     scoreText: "text-amber-600 dark:text-amber-400",
     scoreBg: "bg-amber-50 dark:bg-amber-950/60",
+    badgeBg: "bg-amber-500",
     dot: "bg-amber-400",
   };
   if (score >= 0) return {
     border: "border-l-orange-400",
     scoreText: "text-orange-600 dark:text-orange-400",
     scoreBg: "bg-orange-50 dark:bg-orange-950/60",
+    badgeBg: "bg-orange-500",
     dot: "bg-orange-400",
   };
   return {
     border: "border-l-red-400",
     scoreText: "text-red-600 dark:text-red-400",
     scoreBg: "bg-red-50 dark:bg-red-950/60",
+    badgeBg: "bg-red-500",
     dot: "bg-red-400",
   };
 };
@@ -114,11 +120,13 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
 
   const transitStats: { label: string; value: string }[] = [];
   if (transitMode === 'pt') {
-    if (entry.uniPT)   transitStats.push({ label: "Uni",   value: entry.uniPT });
+    if (entry.uniPT)   transitStats.push({ label: "USYD",   value: entry.uniPT });
+    if (entry.utsPT)   transitStats.push({ label: "UTS",   value: entry.utsPT });
     if (entry.workPT)  transitStats.push({ label: "Work",  value: entry.workPT });
     if (entry.trainPT) transitStats.push({ label: "Train", value: entry.trainPT });
   } else {
-    if (entry.uniDrive)   transitStats.push({ label: "Uni",   value: entry.uniDrive });
+    if (entry.uniDrive)   transitStats.push({ label: "USYD",   value: entry.uniDrive });
+    if (entry.utsDrive)   transitStats.push({ label: "UTS",   value: entry.utsDrive });
     if (entry.workDrive)  transitStats.push({ label: "Work",  value: entry.workDrive });
     if (entry.trainDrive) transitStats.push({ label: "Train", value: entry.trainDrive });
   }
@@ -184,8 +192,8 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
         </div>
       </div>
 
-      {/* Rent */}
-      <div className="px-4 pt-2 pb-4 flex items-end">
+      {/* Rent + Score */}
+      <div className="px-4 pt-2 pb-4 flex items-end justify-between">
         <div>
           <div className="flex items-baseline gap-0.5">
             <span className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums">${entry.rent}</span>
@@ -194,6 +202,9 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
           {ppRent && (
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">${ppRent}/pp</p>
           )}
+        </div>
+        <div className={`${meta.scoreBg} ${meta.scoreText} rounded-xl px-3 py-1.5 text-center`}>
+          <p className="text-lg font-extrabold tabular-nums leading-none">{score}</p>
         </div>
       </div>
 
@@ -236,6 +247,20 @@ function PropertyCard({ entry, onEdit, onDelete, onClick, onStar, transitMode }:
   );
 }
 
+function TransitPill({ val, label }: { val: string | null; label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center px-4 shrink-0">
+      <span className="text-[10px] font-bold uppercase tracking-tight text-gray-400 dark:text-gray-500 leading-none">{label}</span>
+      <span className="mt-0.5 text-[18px] font-black tabular-nums leading-none text-gray-800 dark:text-gray-100">
+        {val
+          ? <>{val}<span className="text-[13px] font-semibold text-gray-400 dark:text-gray-500 ml-1">min</span></>
+          : <span className="text-gray-300 dark:text-gray-700">—</span>
+        }
+      </span>
+    </div>
+  );
+}
+
 function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, onStar, transitMode }: {
   entry: Entry,
   onEdit: () => void,
@@ -260,8 +285,8 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, onStar, tra
   }, [menuPos]);
 
   const openMenu = (x: number, y: number) => {
-    const menuW = 176; // w-44
-    const menuH = 200; // approximate
+    const menuW = 176;
+    const menuH = 200;
     setMenuPos({
       x: Math.min(x, window.innerWidth - menuW - 8),
       y: Math.min(y, window.innerHeight - menuH - 8),
@@ -271,11 +296,12 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, onStar, tra
   const beds = entry.bedrooms ? parseInt(entry.bedrooms) : 1;
   const ppRent = beds > 1 ? Math.round(parseInt(entry.rent) / beds) : null;
 
-  const uniVal  = transitMode === 'pt' ? (entry.uniPT  || null) : (entry.uniDrive  || null);
+  const uniRaw  = transitMode === 'pt' ? (entry.uniPT  || null) : (entry.uniDrive  || null);
+  const utsRaw  = transitMode === 'pt' ? (entry.utsPT  || null) : (entry.utsDrive  || null);
   const workVal = transitMode === 'pt' ? (entry.workPT || null) : (entry.workDrive || null);
-  const transitLabel = transitMode === 'pt' ? 'PT' : 'Drive';
 
   const missingTransit = !entry.uniPT && !entry.uniWalk && !entry.uniDrive &&
+                         !entry.utsPT && !entry.utsWalk && !entry.utsDrive &&
                          !entry.workPT && !entry.workWalk && !entry.workDrive &&
                          !entry.trainPT && !entry.trainWalk && !entry.trainDrive;
   const hasStaleDrive = !missingTransit &&
@@ -291,18 +317,33 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, onStar, tra
     setFetchingTransit(false);
   };
 
+  const street = getStreet(entry.address || "") || "—";
+  const suburb = getSuburb(entry.address || "");
+
   return (
     <div
-      className={`relative flex items-center gap-3 px-4 py-2 border-l-4 ${meta.border} bg-white dark:bg-gray-900 border-b border-b-gray-100 dark:border-b-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-colors cursor-pointer first:rounded-t last:rounded-b last:border-b-0`}
+      className="relative flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors cursor-pointer first:rounded-t-xl last:rounded-b-xl last:border-b-0"
       onClick={onClick}
       onContextMenu={e => { e.preventDefault(); openMenu(e.clientX, e.clientY); }}
     >
-      {/* Address */}
+      {/* Score */}
+      <div className="shrink-0 w-12 text-center">
+        <span className={`text-xl font-black tabular-nums leading-none ${meta.scoreText}`}>{score}</span>
+      </div>
+
+      {/* Address + specs */}
       <div className="flex-1 min-w-0">
-        <p className="text-[15px] font-semibold text-gray-900 dark:text-white truncate">{getStreet(entry.address || "") || "—"}</p>
-        {getSuburb(entry.address || "") && (
-          <p className="text-[13px] text-gray-600 dark:text-gray-300 truncate">{getSuburb(entry.address || "")}</p>
-        )}
+        <p className="text-[16px] font-bold text-gray-900 dark:text-white truncate leading-snug">{street}</p>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {suburb && <span className="text-[13px] font-medium text-gray-500 dark:text-gray-400 truncate">{suburb}</span>}
+          {(entry.bedrooms || entry.bathrooms || entry.carParks) && (
+            <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 dark:text-gray-500">
+              {entry.bedrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faBed} className="w-2.5" />{entry.bedrooms}</span>}
+              {entry.bathrooms && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faShower} className="w-2.5" />{entry.bathrooms}</span>}
+              {entry.carParks && entry.carParks !== "0" && <span className="flex items-center gap-0.5"><FontAwesomeIcon icon={faCar} className="w-2.5" />{entry.carParks}</span>}
+            </span>
+          )}
+        </div>
         {missingTransit && (
           <button
             onClick={handleFetchTransit}
@@ -325,49 +366,38 @@ function ListRow({ entry, onEdit, onDelete, onClick, onFetchTransit, onStar, tra
         )}
       </div>
 
-      {/* Specs */}
-      <div className="hidden sm:flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 w-16 shrink-0">
-        {entry.bedrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faBed} className="w-3" />{entry.bedrooms}</span>}
-        {entry.bathrooms && <span className="flex items-center gap-1"><FontAwesomeIcon icon={faShower} className="w-3" />{entry.bathrooms}</span>}
-      </div>
-
       {/* Transit */}
-      <div className="hidden sm:flex gap-4 shrink-0">
-        {[{ val: uniVal, label: `Uni ${transitLabel}` }, { val: workVal, label: `Work ${transitLabel}` }].map(({ val, label }) => (
-          <div key={label} className="flex flex-col items-end w-14">
-            {val
-              ? <>
-                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tabular-nums">{val}<span className="text-xs font-normal text-gray-400 ml-0.5">min</span></span>
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500">{label}</span>
-                </>
-              : <span className="text-xs text-gray-300 dark:text-gray-700">—</span>
-            }
-          </div>
-        ))}
+      <div className="hidden sm:flex items-stretch divide-x divide-gray-100 dark:divide-gray-800 shrink-0">
+        <TransitPill val={uniRaw} label="USYD" />
+        <TransitPill val={utsRaw} label="UTS" />
+        <TransitPill val={workVal} label="Work" />
       </div>
 
       {/* Rent */}
-      <div className="w-24 shrink-0 text-right">
-        <p className="text-sm font-bold text-gray-900 dark:text-white tabular-nums">${entry.rent}<span className="text-xs font-normal text-gray-400 dark:text-gray-500">/wk</span></p>
-        {ppRent ? <p className="text-xs text-gray-400 dark:text-gray-500">${ppRent}/pp</p> : <p className="text-xs invisible">—</p>}
+      <div className="shrink-0 text-right w-24">
+        <p className="text-xl font-black text-gray-900 dark:text-white tabular-nums leading-none">${entry.rent}</p>
+        {ppRent
+          ? <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 tabular-nums mt-0.5">${ppRent}/pp</p>
+          : <p className="text-[11px] invisible">—</p>
+        }
       </div>
 
-      {/* Star button */}
+      {/* Star */}
       <button
         onClick={e => { e.stopPropagation(); onStar(); }}
-        className="shrink-0 p-1.5 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
         <FontAwesomeIcon
           icon={entry.isStarred ? faStar : faStarOutline}
-          className={`w-3.5 ${entry.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-400'}`}
+          className={`w-4 ${entry.isStarred ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600 hover:text-amber-400'}`}
         />
       </button>
 
-      {/* Menu button */}
+      {/* Menu */}
       <div className="shrink-0" ref={menuRef}>
         <button
           onClick={e => { e.stopPropagation(); menuPos ? setMenuPos(null) : openMenu(e.clientX, e.clientY); }}
-          className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <FontAwesomeIcon icon={faEllipsisVertical} className="w-3.5" />
         </button>
@@ -459,8 +489,10 @@ function Table(props: Props) {
       }
       if (filters.minBedrooms && (!e.bedrooms || parseInt(e.bedrooms) < parseInt(filters.minBedrooms))) return false
       if (filters.maxUniMins) {
-        const mins = transitMode === 'pt' ? e.uniPT : e.uniDrive
-        if (!mins || parseInt(mins) > parseInt(filters.maxUniMins)) return false
+        const pnr = transitMode === 'pt' ? e.uniPT : e.uniDrive
+        const uts = transitMode === 'pt' ? e.utsPT : e.utsDrive
+        const best = (pnr && uts) ? String(Math.min(parseInt(pnr), parseInt(uts))) : (pnr || uts)
+        if (!best || parseInt(best) > parseInt(filters.maxUniMins)) return false
       }
       if (filters.maxWorkMins) {
         const mins = transitMode === 'pt' ? e.workPT : e.workDrive
@@ -553,7 +585,7 @@ function Table(props: Props) {
   if (viewMode === 'list') {
     if (groupBy === 'none') {
       return (
-        <div className="rounded border border-gray-100 dark:border-gray-800 pb-4">
+        <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 pb-4">
           {visibleEntries.map(entry => (
             <ListRow
               key={entry.id}
@@ -574,7 +606,7 @@ function Table(props: Props) {
         {groups.map(({ label, entries }) => (
           <div key={label}>
             <h2 className="sticky top-[68px] z-10 bg-white/90 dark:bg-gray-950/90 backdrop-blur text-lg font-bold text-gray-700 dark:text-gray-300 py-2 px-0.5 mb-0">{label}</h2>
-            <div className="rounded border border-gray-100 dark:border-gray-800">
+            <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800">
               {entries.map(entry => (
                 <ListRow
                   key={entry.id}
